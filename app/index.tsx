@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 export default function HomeScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.helloText}>Hello World</Text>
+      <Text style={styles.helloText}>Mrinaal</Text>
     </View>
   );
 }
