@@ -1,24 +1,90 @@
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function WelcomeScreen() {
   const router = useRouter();
+  
+  // Animation values
+  const welcomeTextOpacity = useRef(new Animated.Value(0)).current;
+  const appNameOpacity = useRef(new Animated.Value(0)).current;
+  const appNameTranslateY = useRef(new Animated.Value(50)).current;
+  const buttonOpacity = useRef(new Animated.Value(0)).current;
+  const buttonScale = useRef(new Animated.Value(0.8)).current;
+
+  useEffect(() => {
+    // Start animations when component mounts
+    const animationSequence = Animated.sequence([
+      // Fade in "Welcome to" text
+      Animated.timing(welcomeTextOpacity, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      // Fade in and slide up app name
+      Animated.parallel([
+        Animated.timing(appNameOpacity, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(appNameTranslateY, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ]),
+      // Fade in and scale up button
+      Animated.parallel([
+        Animated.timing(buttonOpacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.spring(buttonScale, {
+          toValue: 1,
+          tension: 100,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]);
+
+    animationSequence.start();
+  }, []);
 
   const handleGetStarted = () => {
-    router.push('/main');
+    // Use replace instead of push to prevent going back
+    router.replace('/main');
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.textContainer}>
-        <Text style={styles.welcomeText}>Welcome to</Text>
-        <Text style={styles.appName}>Kaarya</Text>
+        <Animated.View style={{ opacity: welcomeTextOpacity }}>
+          <Text style={styles.welcomeText}>Welcome to</Text>
+        </Animated.View>
+        
+        <Animated.View 
+          style={{ 
+            opacity: appNameOpacity,
+            transform: [{ translateY: appNameTranslateY }]
+          }}
+        >
+          <Text style={styles.appName}>Kaarya</Text>
+        </Animated.View>
       </View>
       
-      <TouchableOpacity style={styles.button} onPress={handleGetStarted}>
-        <Text style={styles.buttonText}>Get Started</Text>
-      </TouchableOpacity>
+      <Animated.View 
+        style={{ 
+          opacity: buttonOpacity,
+          transform: [{ scale: buttonScale }]
+        }}
+      >
+        <TouchableOpacity style={styles.button} onPress={handleGetStarted}>
+          <Text style={styles.buttonText}>Get Started</Text>
+        </TouchableOpacity>
+      </Animated.View>
     </View>
   );
 }
