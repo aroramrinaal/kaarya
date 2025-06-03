@@ -1,286 +1,427 @@
 import { useRouter } from 'expo-router';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
+// Multi-language translations of "Work/Task"
+const LANGUAGE_VARIANTS = [
+  { text: 'Kaarya', lang: 'EN', subtitle: 'Your productivity companion' },
+  { text: 'कार्य', lang: 'HI', subtitle: 'आपका उत्पादकता साथी' },
+  { text: 'কাজ', lang: 'BN', subtitle: 'আপনার উৎপাদনশীলতার সঙ্গী' },
+  { text: 'काम', lang: 'NE', subtitle: 'तपाईंको उत्पादकता साथी' },
+  { text: 'Work', lang: 'EN', subtitle: 'Get things done efficiently' },
+  { text: 'Travail', lang: 'FR', subtitle: 'Votre compagnon de productivité' },
+  { text: '仕事', lang: 'JP', subtitle: 'あなたの生産性パートナー' },
+];
+
 export default function WelcomeScreen() {
   const router = useRouter();
+  const [currentLanguageIndex, setCurrentLanguageIndex] = useState(0);
 
-  // Enhanced animation values
+  // Core animation values
   const backgroundOpacity = useRef(new Animated.Value(0)).current;
-  const welcomeTextOpacity = useRef(new Animated.Value(0)).current;
-  const welcomeTextScale = useRef(new Animated.Value(0.8)).current;
-  const appNameOpacity = useRef(new Animated.Value(0)).current;
-  const appNameTranslateY = useRef(new Animated.Value(80)).current;
-  const appNameScale = useRef(new Animated.Value(0.7)).current;
-  const decorativeLineWidth = useRef(new Animated.Value(0)).current;
+  const heroTextOpacity = useRef(new Animated.Value(0)).current;
+  const heroTextScale = useRef(new Animated.Value(0.3)).current;
+  const heroTextRotateX = useRef(new Animated.Value(90)).current;
+  const languageIndicatorOpacity = useRef(new Animated.Value(0)).current;
+  const subtitleOpacity = useRef(new Animated.Value(0)).current;
   const buttonOpacity = useRef(new Animated.Value(0)).current;
-  const buttonTranslateY = useRef(new Animated.Value(50)).current;
-  const buttonScale = useRef(new Animated.Value(0.5)).current;
+  const buttonScale = useRef(new Animated.Value(0.3)).current;
+  
+  // Language cycling animation
+  const languageTransition = useRef(new Animated.Value(0)).current;
+  const glowIntensity = useRef(new Animated.Value(0)).current;
+  
+  // Floating elements
   const floatingElements = useRef([
+    new Animated.Value(0),
     new Animated.Value(0),
     new Animated.Value(0),
     new Animated.Value(0),
   ]).current;
 
+  // Particle system
+  const particles = useRef(
+    Array.from({ length: 8 }, () => ({
+      opacity: new Animated.Value(0),
+      translateX: new Animated.Value(0),
+      translateY: new Animated.Value(0),
+      scale: new Animated.Value(0),
+      rotate: new Animated.Value(0),
+    }))
+  ).current;
+
   useEffect(() => {
-    // Create floating background elements animation
-    const createFloatingAnimation = (animValue: Animated.Value, delay: number) => {
+    // Quick floating animations
+    const createFloatingAnimation = (animValue: Animated.Value, delay: number, duration = 2000) => {
       return Animated.loop(
         Animated.sequence([
           Animated.delay(delay),
           Animated.timing(animValue, {
             toValue: 1,
-            duration: 3000 + Math.random() * 2000,
+            duration: duration + Math.random() * 1000,
             useNativeDriver: true,
           }),
           Animated.timing(animValue, {
             toValue: 0,
-            duration: 3000 + Math.random() * 2000,
+            duration: duration + Math.random() * 1000,
             useNativeDriver: true,
           }),
         ])
       );
     };
 
-    // Start floating animations
+    // Start floating animations immediately
     floatingElements.forEach((element, index) => {
-      createFloatingAnimation(element, index * 1000).start();
+      createFloatingAnimation(element, index * 200, 1500).start();
     });
 
-    // Main entrance animation sequence
+    // Particle burst animation
+    const createParticleBurst = () => {
+      const particleAnimations = particles.map((particle, index) => {
+        const angle = (index / particles.length) * 2 * Math.PI;
+        const distance = 80 + Math.random() * 40;
+        
+        return Animated.sequence([
+          Animated.delay(index * 50),
+          Animated.parallel([
+            Animated.timing(particle.opacity, {
+              toValue: 1,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+            Animated.timing(particle.scale, {
+              toValue: 1,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+            Animated.timing(particle.translateX, {
+              toValue: Math.cos(angle) * distance,
+              duration: 800,
+              useNativeDriver: true,
+            }),
+            Animated.timing(particle.translateY, {
+              toValue: Math.sin(angle) * distance,
+              duration: 800,
+              useNativeDriver: true,
+            }),
+            Animated.timing(particle.rotate, {
+              toValue: 360,
+              duration: 800,
+              useNativeDriver: true,
+            }),
+          ]),
+          Animated.parallel([
+            Animated.timing(particle.opacity, {
+              toValue: 0,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+            Animated.timing(particle.scale, {
+              toValue: 0,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+          ]),
+        ]);
+      });
+      
+      return Animated.parallel(particleAnimations);
+    };
+
+    // Main entrance sequence - much faster
     const entranceSequence = Animated.sequence([
-      // Background fade in
+      // Quick background fade
       Animated.timing(backgroundOpacity, {
         toValue: 1,
-        duration: 1200,
+        duration: 400,
         useNativeDriver: true,
       }),
       
-      // Welcome text with subtle bounce
+      // Dramatic hero text entrance with 3D effect
       Animated.parallel([
-        Animated.timing(welcomeTextOpacity, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-        Animated.spring(welcomeTextScale, {
-          toValue: 1,
-          tension: 120,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-      ]),
-
-      // Decorative line expansion
-      Animated.timing(decorativeLineWidth, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: false,
-      }),
-
-      // App name with dramatic entrance
-      Animated.parallel([
-        Animated.timing(appNameOpacity, {
-          toValue: 1,
-          duration: 1200,
-          useNativeDriver: true,
-        }),
-        Animated.spring(appNameTranslateY, {
-          toValue: 0,
-          tension: 80,
-          friction: 8,
-          useNativeDriver: true,
-        }),
-        Animated.spring(appNameScale, {
+        Animated.spring(heroTextScale, {
           toValue: 1,
           tension: 100,
-          friction: 7,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+        Animated.spring(heroTextRotateX, {
+          toValue: 0,
+          tension: 80,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+        Animated.timing(heroTextOpacity, {
+          toValue: 1,
+          duration: 600,
           useNativeDriver: true,
         }),
       ]),
 
-      // Button with bounce entrance
+      // Language indicator and subtitle
       Animated.parallel([
-        Animated.timing(buttonOpacity, {
+        Animated.timing(languageIndicatorOpacity, {
           toValue: 1,
-          duration: 800,
+          duration: 400,
           useNativeDriver: true,
         }),
-        Animated.spring(buttonTranslateY, {
-          toValue: 0,
-          tension: 80,
-          friction: 6,
+        Animated.timing(subtitleOpacity, {
+          toValue: 1,
+          duration: 500,
           useNativeDriver: true,
         }),
+      ]),
+
+      // Button with spring entrance
+      Animated.parallel([
         Animated.spring(buttonScale, {
           toValue: 1,
           tension: 120,
-          friction: 8,
+          friction: 7,
+          useNativeDriver: true,
+        }),
+        Animated.timing(buttonOpacity, {
+          toValue: 1,
+          duration: 400,
           useNativeDriver: true,
         }),
       ]),
     ]);
 
-    entranceSequence.start();
+    // Start entrance sequence
+    entranceSequence.start(() => {
+      // Start language cycling after entrance
+      startLanguageCycling();
+      // Trigger particle burst
+      createParticleBurst().start();
+    });
+
+    // Glow effect loop
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowIntensity, {
+          toValue: 1,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowIntensity, {
+          toValue: 0,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
   }, []);
 
+  const startLanguageCycling = () => {
+    const cycleLanguages = () => {
+      // Animate out current text
+      Animated.parallel([
+        Animated.timing(languageTransition, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(subtitleOpacity, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        // Change language
+        setCurrentLanguageIndex((prev) => (prev + 1) % LANGUAGE_VARIANTS.length);
+        
+        // Animate in new text
+        Animated.parallel([
+          Animated.timing(languageTransition, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(subtitleOpacity, {
+            toValue: 1,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          // Schedule next cycle
+          setTimeout(cycleLanguages, 2500);
+        });
+      });
+    };
+
+    // Start cycling after initial delay
+    setTimeout(cycleLanguages, 3000);
+  };
+
   const handleGetStarted = () => {
-    // Add exit animation before navigation
+    // Quick exit with particle explosion
     Animated.parallel([
-      Animated.timing(backgroundOpacity, {
-        toValue: 0,
-        duration: 400,
+      Animated.timing(heroTextScale, {
+        toValue: 1.2,
+        duration: 200,
         useNativeDriver: true,
       }),
-      Animated.timing(welcomeTextOpacity, {
-        toValue: 0,
-        duration: 300,
+      Animated.timing(buttonScale, {
+        toValue: 0.9,
+        duration: 150,
         useNativeDriver: true,
       }),
-      Animated.timing(appNameOpacity, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(buttonOpacity, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
+      ...particles.map(particle => 
+        Animated.timing(particle.opacity, {
+          toValue: 1,
+          duration: 100,
+          useNativeDriver: true,
+        })
+      ),
     ]).start(() => {
       router.replace('/main');
     });
   };
 
+  const currentVariant = LANGUAGE_VARIANTS[currentLanguageIndex];
+
   return (
     <Animated.View style={[styles.container, { opacity: backgroundOpacity }]}>
-      {/* Floating background elements */}
-      <Animated.View
-        style={[
-          styles.floatingElement,
-          styles.floatingElement1,
-          {
-            opacity: floatingElements[0].interpolate({
-              inputRange: [0, 0.5, 1],
-              outputRange: [0.1, 0.3, 0.1],
-            }),
-            transform: [
-              {
-                translateY: floatingElements[0].interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0, -30],
-                }),
-              },
-            ],
-          },
-        ]}
-      />
-      <Animated.View
-        style={[
-          styles.floatingElement,
-          styles.floatingElement2,
-          {
-            opacity: floatingElements[1].interpolate({
-              inputRange: [0, 0.5, 1],
-              outputRange: [0.1, 0.2, 0.1],
-            }),
-            transform: [
-              {
-                translateX: floatingElements[1].interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0, 20],
-                }),
-              },
-            ],
-          },
-        ]}
-      />
-      <Animated.View
-        style={[
-          styles.floatingElement,
-          styles.floatingElement3,
-          {
-            opacity: floatingElements[2].interpolate({
-              inputRange: [0, 0.5, 1],
-              outputRange: [0.1, 0.25, 0.1],
-            }),
-            transform: [
-              {
-                rotate: floatingElements[2].interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ['0deg', '360deg'],
-                }),
-              },
-            ],
-          },
-        ]}
-      />
+      {/* Enhanced floating elements */}
+      {floatingElements.map((element, index) => (
+        <Animated.View
+          key={index}
+          style={[
+            styles.floatingElement,
+            styles[`floatingElement${index + 1}` as `floatingElement${1|2|3|4}`],
+            {
+              opacity: element.interpolate({
+                inputRange: [0, 0.5, 1],
+                outputRange: [0.05, 0.2, 0.05],
+              }),
+              transform: [
+                {
+                  translateY: element.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, index % 2 === 0 ? -40 : 40],
+                  }),
+                },
+                {
+                  rotate: element.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: ['0deg', '360deg'],
+                  }),
+                },
+                {
+                  scale: element.interpolate({
+                    inputRange: [0, 0.5, 1],
+                    outputRange: [0.8, 1.2, 0.8],
+                  }),
+                },
+              ],
+            },
+          ]}
+        />
+      ))}
+
+      {/* Particle system */}
+      {particles.map((particle, index) => (
+        <Animated.View
+          key={`particle-${index}`}
+          style={[
+            styles.particle,
+            {
+              opacity: particle.opacity,
+              transform: [
+                { translateX: particle.translateX },
+                { translateY: particle.translateY },
+                { scale: particle.scale },
+                {
+                  rotate: particle.rotate.interpolate({
+                    inputRange: [0, 360],
+                    outputRange: ['0deg', '360deg'],
+                  }),
+                },
+              ],
+            },
+          ]}
+        />
+      ))}
 
       <View style={styles.contentContainer}>
-        <View style={styles.textContainer}>
-          {/* Welcome text with enhanced styling */}
-          <Animated.View
-            style={{
-              opacity: welcomeTextOpacity,
-              transform: [{ scale: welcomeTextScale }],
-            }}
-          >
-            <Text style={styles.welcomeText}>Welcome to</Text>
-          </Animated.View>
-
-          {/* Decorative line */}
+        {/* Hero text with language switching */}
+        <View style={styles.heroContainer}>
           <Animated.View
             style={[
-              styles.decorativeLine,
+              styles.heroTextContainer,
               {
-                width: decorativeLineWidth.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0, 60],
-                }),
+                opacity: heroTextOpacity,
+                transform: [
+                  { scale: heroTextScale },
+                  {
+                    rotateX: heroTextRotateX.interpolate({
+                      inputRange: [0, 90],
+                      outputRange: ['0deg', '90deg'],
+                    }),
+                  },
+                  {
+                    translateY: languageTransition.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, -20],
+                    }),
+                  },
+                ],
               },
             ]}
-          />
-
-          {/* App name with enhanced entrance */}
-          <Animated.View
-            style={{
-              opacity: appNameOpacity,
-              transform: [
-                { translateY: appNameTranslateY },
-                { scale: appNameScale },
-              ],
-            }}
           >
-            <Text style={styles.appName}>Kaarya</Text>
-            <View style={styles.appNameUnderline} />
+            <Animated.View
+              style={[
+                styles.glowContainer,
+                {
+                  shadowOpacity: glowIntensity.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.2, 0.6],
+                  }),
+                },
+              ]}
+            >
+              <Text style={styles.heroText}>{currentVariant.text}</Text>
+            </Animated.View>
           </Animated.View>
 
-          {/* Subtitle */}
-          <Animated.View style={{ opacity: appNameOpacity }}>
-            <Text style={styles.subtitle}>Your productivity companion</Text>
+          {/* Language indicator */}
+          <Animated.View
+            style={[
+              styles.languageIndicator,
+              { opacity: languageIndicatorOpacity }
+            ]}
+          >
+            <Text style={styles.languageCode}>{currentVariant.lang}</Text>
+          </Animated.View>
+
+          {/* Dynamic subtitle */}
+          <Animated.View
+            style={[
+              styles.subtitleContainer,
+              { opacity: subtitleOpacity }
+            ]}
+          >
+            <Text style={styles.subtitle}>{currentVariant.subtitle}</Text>
           </Animated.View>
         </View>
 
-        {/* Enhanced button */}
+        {/* Minimal arrow button */}
         <Animated.View
           style={{
             opacity: buttonOpacity,
-            transform: [
-              { translateY: buttonTranslateY },
-              { scale: buttonScale },
-            ],
+            transform: [{ scale: buttonScale }],
           }}
         >
           <TouchableOpacity
-            style={styles.button}
+            style={styles.arrowButton}
             onPress={handleGetStarted}
-            activeOpacity={0.8}
+            activeOpacity={0.7}
           >
-            <View style={styles.buttonGradient}>
-              <Text style={styles.buttonText}>Get Started</Text>
-              <View style={styles.buttonAccent} />
+            <View style={styles.arrowContainer}>
+              <Text style={styles.arrowText}>→</Text>
             </View>
           </TouchableOpacity>
         </Animated.View>
@@ -292,7 +433,7 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5DC', // Beige background
+    backgroundColor: '#F5F5DC',
   },
   contentContainer: {
     flex: 1,
@@ -300,85 +441,80 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 40,
   },
-  textContainer: {
+  heroContainer: {
     alignItems: 'center',
-    marginBottom: 100,
+    marginBottom: 120,
   },
-  welcomeText: {
-    fontSize: 28,
-    fontWeight: '300',
-    color: '#8B4513',
+  heroTextContainer: {
+    alignItems: 'center',
     marginBottom: 20,
-    textAlign: 'center',
-    letterSpacing: 2,
-    opacity: 0.8,
   },
-  decorativeLine: {
-    height: 2,
-    backgroundColor: '#8B4513',
-    marginBottom: 30,
-    opacity: 0.6,
+  glowContainer: {
+    shadowColor: '#8B4513',
+    shadowOffset: { width: 0, height: 0 },
+    shadowRadius: 20,
+    elevation: 10,
   },
-  appName: {
-    fontSize: 64,
-    fontWeight: '800',
+  heroText: {
+    fontSize: 72,
+    fontWeight: '900',
     color: '#8B4513',
     textAlign: 'center',
-    letterSpacing: 3,
-    textShadowColor: 'rgba(139, 69, 19, 0.2)',
-    textShadowOffset: { width: 3, height: 3 },
-    textShadowRadius: 8,
-    marginBottom: 8,
+    letterSpacing: 4,
+    textShadowColor: 'rgba(139, 69, 19, 0.3)',
+    textShadowOffset: { width: 4, height: 4 },
+    textShadowRadius: 12,
   },
-  appNameUnderline: {
-    width: 120,
-    height: 3,
-    backgroundColor: '#8B4513',
-    alignSelf: 'center',
-    opacity: 0.4,
+  languageIndicator: {
+    backgroundColor: 'rgba(139, 69, 19, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
     marginBottom: 15,
+    borderWidth: 1,
+    borderColor: 'rgba(139, 69, 19, 0.2)',
+  },
+  languageCode: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#8B4513',
+    letterSpacing: 1,
+  },
+  subtitleContainer: {
+    alignItems: 'center',
   },
   subtitle: {
     fontSize: 16,
     fontWeight: '400',
     color: '#8B4513',
     textAlign: 'center',
-    opacity: 0.7,
-    letterSpacing: 1,
+    opacity: 0.8,
+    letterSpacing: 0.5,
     fontStyle: 'italic',
   },
-  button: {
-    borderRadius: 30,
-    elevation: 8,
-    shadowColor: '#8B4513',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+  arrowButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  buttonGradient: {
+  arrowContainer: {
+    width: 80,
+    height: 80,
     backgroundColor: '#8B4513',
-    paddingHorizontal: 50,
-    paddingVertical: 18,
-    borderRadius: 30,
-    position: 'relative',
-    overflow: 'hidden',
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#8B4513',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 12,
   },
-  buttonText: {
+  arrowText: {
+    fontSize: 32,
     color: '#F5F5DC',
-    fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '300',
     textAlign: 'center',
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-  },
-  buttonAccent: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 2,
-    backgroundColor: '#F5F5DC',
-    opacity: 0.3,
+    transform: [{ translateX: 2 }],
   },
   floatingElement: {
     position: 'absolute',
@@ -386,21 +522,36 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   floatingElement1: {
-    width: 80,
-    height: 80,
-    top: height * 0.15,
+    width: 60,
+    height: 60,
+    top: height * 0.1,
     left: width * 0.1,
   },
   floatingElement2: {
-    width: 60,
-    height: 60,
-    top: height * 0.7,
+    width: 40,
+    height: 40,
+    top: height * 0.8,
     right: width * 0.15,
   },
   floatingElement3: {
-    width: 40,
-    height: 40,
-    top: height * 0.25,
-    right: width * 0.25,
+    width: 80,
+    height: 80,
+    top: height * 0.2,
+    right: width * 0.1,
+  },
+  floatingElement4: {
+    width: 50,
+    height: 50,
+    bottom: height * 0.2,
+    left: width * 0.2,
+  },
+  particle: {
+    position: 'absolute',
+    width: 8,
+    height: 8,
+    backgroundColor: '#8B4513',
+    borderRadius: 4,
+    top: height * 0.5,
+    left: width * 0.5,
   },
 });
