@@ -24,7 +24,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5DC', // Beige background
+    backgroundColor: '#FAEBD7',
   },
   content: {
     flex: 1,
@@ -33,8 +33,8 @@ const styles = StyleSheet.create({
   },
   helloText: {
     fontSize: 48,
-    fontFamily: 'Cochin', // Use a nice built-in font, or remove this line for default
-    color: '#8B4513', // Dark brown for contrast
+    fontFamily: 'Cochin',
+    color: '#90574D',
     textAlign: 'center',
     textShadowColor: 'rgba(0, 0, 0, 0.1)',
     textShadowOffset: { width: 2, height: 2 },
