@@ -131,12 +131,22 @@ export default function WelcomeScreen() {
     Animated.parallel([
       Animated.timing(backgroundOpacity, {
         toValue: 0,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.timing(welcomeTextOpacity, {
+        toValue: 0,
         duration: 300,
         useNativeDriver: true,
       }),
-      Animated.timing(buttonScale, {
-        toValue: 1.1,
-        duration: 150,
+      Animated.timing(appNameOpacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonOpacity, {
+        toValue: 0,
+        duration: 300,
         useNativeDriver: true,
       }),
     ]).start(() => {
