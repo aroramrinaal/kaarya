@@ -29,9 +29,9 @@ export default function LoginScreen() {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // For now, just navigate to a dashboard (you'll create this later)
+      // Navigate to dashboard and clear auth stack
       Alert.alert('Success', 'Login successful!');
-      // router.replace('/(authenticated)/dashboard');
+      router.replace('/(authenticated)/dashboard');
     } catch (error) {
       Alert.alert('Error', 'Login failed. Please try again.');
     } finally {
@@ -40,7 +40,7 @@ export default function LoginScreen() {
   };
 
   const goToSignup = () => {
-    router.push('/auth/signup');
+    router.replace('/auth/signup');
   };
 
   const goBack = () => {

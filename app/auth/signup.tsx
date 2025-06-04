@@ -53,7 +53,7 @@ export default function SignupScreen() {
   };
 
   const goToLogin = () => {
-    router.push('/auth/login');
+    router.replace('/auth/login');
   };
 
   const goBack = () => {
