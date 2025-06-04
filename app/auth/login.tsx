@@ -9,6 +9,8 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
   View
 } from 'react-native';
 
@@ -32,79 +34,90 @@ export default function LoginScreen() {
     Alert.alert('Coming Soon', 'Apple sign-in will be available soon!');
   };
 
+  // Dismiss keyboard when tapping outside
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
+  };
+
   return (
-    <KeyboardAvoidingView 
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      {/* Main Content */}
-      <View style={styles.content}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Create your Kaarya account</Text>
-          <Text style={styles.subtitle}>Minimal. Fast. Yours from the first task.</Text>
+    <TouchableWithoutFeedback onPress={dismissKeyboard}>
+      <KeyboardAvoidingView 
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        {/* Main Content */}
+        <View style={styles.content}>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.title}>Create your Kaarya account</Text>
+            <Text style={styles.subtitle}>Minimal. Fast. Yours from the first task.</Text>
+          </View>
+
+          {/* Form */}
+          <View style={styles.form}>
+            {/* Email Section */}
+            <Text style={styles.formLabel}>Enter your email to sign up for this app</Text>
+            
+            <TextInput
+              style={styles.emailInput}
+              placeholder="name@gmail.com"
+              placeholderTextColor="#90574D80"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="done"
+              onSubmitEditing={dismissKeyboard}
+              blurOnSubmit={true}
+            />
+
+            <TouchableOpacity
+              style={styles.continueButton}
+              onPress={handleEmailContinue}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.continueButtonText}>Continue</Text>
+            </TouchableOpacity>
+
+            {/* Divider */}
+            <Text style={styles.dividerText}>or</Text>
+            
+            {/* Social Login Buttons */}
+            <TouchableOpacity
+              style={styles.socialButton}
+              onPress={handleGoogleSignIn}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.socialButtonText}>G Continue with Google</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.socialButton}
+              onPress={handleAppleSignIn}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.socialButtonText}>🍎 Continue with Apple</Text>
+            </TouchableOpacity>
+
+            {/* Terms */}
+            <Text style={styles.termsText}>
+              By clicking continue, you agree to our Terms of Service and Privacy Policy
+            </Text>
+          </View>
         </View>
 
-        {/* Form */}
-        <View style={styles.form}>
-          {/* Email Section */}
-          <Text style={styles.formLabel}>Enter your email to sign up for this app</Text>
-          
-          <TextInput
-            style={styles.emailInput}
-            placeholder="name@gmail.com"
-            placeholderTextColor="#90574D80"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
+        {/* Bottom Illustration - Fixed Position */}
+        <View style={styles.illustrationContainer}>
+          <Image 
+            source={require('../../assets/images/login/kaarya-login.png')} 
+            style={styles.illustrationImage}
+            resizeMode="contain"
           />
-
-          <TouchableOpacity
-            style={styles.continueButton}
-            onPress={handleEmailContinue}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.continueButtonText}>Continue</Text>
-          </TouchableOpacity>
-
-          {/* Divider */}
-          <Text style={styles.dividerText}>or</Text>
-          
-          {/* Social Login Buttons */}
-          <TouchableOpacity
-            style={styles.socialButton}
-            onPress={handleGoogleSignIn}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.socialButtonText}>G Continue with Google</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.socialButton}
-            onPress={handleAppleSignIn}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.socialButtonText}>🍎 Continue with Apple</Text>
-          </TouchableOpacity>
-
-          {/* Terms */}
-          <Text style={styles.termsText}>
-            By clicking continue, you agree to our Terms of Service and Privacy Policy
-          </Text>
         </View>
-      </View>
-
-      {/* Bottom Illustration - Fixed Position */}
-      <View style={styles.illustrationContainer}>
-        <Image 
-          source={require('../../assets/images/login/kaarya-login.png')} 
-          style={styles.illustrationImage}
-          resizeMode="contain"
-        />
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
   );
 }
 
