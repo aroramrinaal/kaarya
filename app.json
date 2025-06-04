@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "my-first-app",
-    "slug": "my-first-app",
+    "name": "kaarya",
+    "slug": "kaarya",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myfirstapp",
+    "scheme": "kaarya",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
