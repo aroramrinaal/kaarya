@@ -105,8 +105,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   heroImage: {
-    width: 200,
-    height: 200,
+    width: 290,
+    height: 250,
   },
   welcomeText: {
     fontSize: 32,
