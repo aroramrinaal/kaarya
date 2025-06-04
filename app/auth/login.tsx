@@ -9,42 +9,47 @@ import {
     TextInput,
     TouchableOpacity,
     View,
+    Image,
 } from 'react-native';
 
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+  const handleEmailContinue = async () => {
+    if (!email) {
+      Alert.alert('Error', 'Please enter your email');
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert('Error', 'Please enter a valid email address');
       return;
     }
 
     setIsLoading(true);
-    // TODO: Implement actual login logic here
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Navigate to dashboard and clear auth stack
       Alert.alert('Success', 'Login successful!');
       router.replace('/(authenticated)/dashboard');
     } catch (error) {
-      Alert.alert('Error', 'Login failed. Please try again.');
+      Alert.alert('Error', 'Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const goToSignup = () => {
-    router.replace('/auth/signup');
+  const handleGoogleSignIn = () => {
+    Alert.alert('Coming Soon', 'Google sign-in will be available soon!');
   };
 
-  const goBack = () => {
-    router.back();
+  const handleAppleSignIn = () => {
+    Alert.alert('Coming Soon', 'Apple sign-in will be available soon!');
   };
 
   return (
@@ -52,58 +57,73 @@ export default function LoginScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={goBack} style={styles.backButton}>
-          <Text style={styles.backText}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>Login</Text>
+        <Text style={styles.title}>Create your Kaarya account</Text>
+        <Text style={styles.subtitle}>Minimal. Fast. Yours from the first task.</Text>
       </View>
 
+      {/* Form */}
       <View style={styles.form}>
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="Enter your email"
-            placeholderTextColor="#B8A693"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-        </View>
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Enter your password"
-            placeholderTextColor="#B8A693"
-            secureTextEntry
-            autoCapitalize="none"
-          />
-        </View>
+        <Text style={styles.formLabel}>Enter your email to sign up for this app</Text>
+        
+        <TextInput
+          style={styles.emailInput}
+          value={email}
+          onChangeText={setEmail}
+          placeholder="name@gmail.com"
+          placeholderTextColor="#B8A693"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+          returnKeyType="done"
+          onSubmitEditing={handleEmailContinue}
+        />
 
         <TouchableOpacity
-          style={[styles.loginButton, isLoading && styles.disabledButton]}
-          onPress={handleLogin}
+          style={[styles.continueButton, isLoading && styles.disabledButton]}
+          onPress={handleEmailContinue}
           disabled={isLoading}
           activeOpacity={0.8}
         >
-          <Text style={styles.loginButtonText}>
-            {isLoading ? 'Logging in...' : 'Login'}
+          <Text style={styles.continueButtonText}>
+            {isLoading ? 'Please wait...' : 'Continue'}
           </Text>
         </TouchableOpacity>
 
-        <View style={styles.signupPrompt}>
-          <Text style={styles.signupText}>Don't have an account? </Text>
-          <TouchableOpacity onPress={goToSignup}>
-            <Text style={styles.signupLink}>Sign up</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Divider */}
+        <Text style={styles.dividerText}>or</Text>
+
+        {/* Social Login Buttons */}
+        <TouchableOpacity
+          style={styles.socialButton}
+          onPress={handleGoogleSignIn}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.socialButtonText}>G Continue with Google</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.socialButton}
+          onPress={handleAppleSignIn}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.socialButtonText}>🍎 Continue with Apple</Text>
+        </TouchableOpacity>
+
+        {/* Terms */}
+        <Text style={styles.termsText}>
+          By clicking continue, you agree to our Terms of Service and Privacy Policy
+        </Text>
+      </View>
+
+      {/* Bottom Illustration - Fixed at bottom */}
+      <View style={styles.illustrationContainer}>
+        <Image 
+          source={require('../../assets/images/login/kaarya-login.png')} 
+          style={styles.illustrationImage}
+          resizeMode="contain"
+        />
       </View>
     </KeyboardAvoidingView>
   );
@@ -115,89 +135,125 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAEBD7',
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  backText: {
-    fontSize: 24,
-    color: '#90574D',
-    fontWeight: '500',
+    paddingTop: 80,
+    paddingHorizontal: 24,
+    marginBottom: 50,
   },
   title: {
-    flex: 1,
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#90574D',
-    textAlign: 'center',
-    marginRight: 40, // Compensate for back button
-  },
-  form: {
-    flex: 1,
-    paddingHorizontal: 30,
-    paddingTop: 40,
-  },
-  inputContainer: {
-    marginBottom: 24,
-  },
-  label: {
-    fontSize: 16,
+    fontSize: 32,
     fontWeight: '600',
     color: '#90574D',
-    marginBottom: 8,
+    textAlign: 'center',
+    marginBottom: 12,
+    lineHeight: 36,
   },
-  input: {
+  subtitle: {
+    fontSize: 18,
+    color: '#90574D',
+    textAlign: 'center',
+    opacity: 0.8,
+    lineHeight: 24,
+  },
+  form: {
+    paddingHorizontal: 24,
+    flex: 1,
+  },
+  formLabel: {
+    fontSize: 16,
+    color: '#90574D',
+    textAlign: 'center',
+    marginBottom: 24,
+    opacity: 0.9,
+    lineHeight: 22,
+  },
+  emailInput: {
     height: 52,
-    backgroundColor: '#F5F1E8',
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 16,
     color: '#90574D',
     borderWidth: 1,
     borderColor: '#E5D5C8',
+    marginBottom: 16,
+    shadowColor: '#90574D',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
-  loginButton: {
-    height: 56,
+  continueButton: {
+    height: 52,
     backgroundColor: '#90574D',
-    borderRadius: 28,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
+    marginBottom: 24,
     shadowColor: '#90574D',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 3,
   },
   disabledButton: {
     opacity: 0.6,
   },
-  loginButtonText: {
-    fontSize: 18,
+  continueButtonText: {
+    fontSize: 16,
     fontWeight: '600',
     color: '#FAEBD7',
+    letterSpacing: 0.3,
   },
-  signupPrompt: {
-    flexDirection: 'row',
+  dividerText: {
+    fontSize: 16,
+    color: '#90574D',
+    opacity: 0.6,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  socialButton: {
+    height: 52,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
     justifyContent: 'center',
-    marginTop: 30,
+    alignItems: 'center',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E5D5C8',
+    shadowColor: '#90574D',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
-  signupText: {
+  socialButtonText: {
     fontSize: 16,
+    fontWeight: '500',
     color: '#90574D',
-    opacity: 0.8,
+    letterSpacing: 0.2,
   },
-  signupLink: {
-    fontSize: 16,
+  termsText: {
+    fontSize: 14,
     color: '#90574D',
-    fontWeight: '600',
+    textAlign: 'center',
+    opacity: 0.7,
+    lineHeight: 18,
+    marginTop: 8,
+    paddingHorizontal: 8,
   },
-}); 
+  illustrationContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 280,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    zIndex: -1,
+  },
+  illustrationImage: {
+    width: 300,
+    height: 240,
+    opacity: 0.7,
+  },
+});

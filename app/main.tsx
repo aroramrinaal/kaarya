@@ -44,7 +44,7 @@ export default function AuthOptionsScreen() {
         {/* Hero Image */}
         <View style={styles.imageContainer}>
           <Image 
-            source={require('../assets/images/main/kaarya.png')} 
+            source={require('../assets/images/main/kaarya-stickman.png')} 
             style={styles.heroImage}
             resizeMode="contain"
           />
