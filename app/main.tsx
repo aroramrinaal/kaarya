@@ -1,17 +1,25 @@
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 
 export default function AuthOptionsScreen() {
   const router = useRouter();
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
 
   useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 400,
-      useNativeDriver: true,
-    }).start();
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]).start();
   }, []);
 
   const handleLogin = () => {
@@ -24,10 +32,40 @@ export default function AuthOptionsScreen() {
 
   return (
     <View style={styles.container}>
-      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        <Text style={styles.welcomeText}>Welcome to Kaarya</Text>
-        <Text style={styles.subtitleText}>Get started with your productivity journey</Text>
+      <Animated.View 
+        style={[
+          styles.content, 
+          { 
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }]
+          }
+        ]}
+      >
+        {/* Hero Image */}
+        <View style={styles.imageContainer}>
+          <Image 
+            source={require('../assets/images/main/kaarya.png')} 
+            style={styles.heroImage}
+            resizeMode="contain"
+          />
+        </View>
         
+        {/* Welcome Text */}
+        <Text style={styles.welcomeText}>Welcome to Kaarya</Text>
+        
+        {/* Tagline */}
+        <Text style={styles.taglineText}>All Action. Zero Drama</Text>
+        
+        {/* Description */}
+        <Text style={styles.descriptionText}>
+          A distraction-free to-do list built for people who just want to get things done.
+        </Text>
+        
+        <Text style={styles.subtitleText}>
+          No badges. No clutter. Just tasks - and a timer if you need it.
+        </Text>
+        
+        {/* Button Container */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={[styles.button, styles.loginButton]}
@@ -42,7 +80,7 @@ export default function AuthOptionsScreen() {
             onPress={handleSignup}
             activeOpacity={0.8}
           >
-            <Text style={styles.signupButtonText}>Sign Up</Text>
+            <Text style={styles.signupButtonText}>Create an account</Text>
           </TouchableOpacity>
         </View>
       </Animated.View>
@@ -59,27 +97,55 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 30,
+    paddingHorizontal: 32,
+    paddingVertical: 40,
+  },
+  imageContainer: {
+    marginBottom: 40,
+    alignItems: 'center',
+  },
+  heroImage: {
+    width: 200,
+    height: 200,
   },
   welcomeText: {
-    fontSize: 36,
-    fontWeight: '700',
+    fontSize: 32,
+    fontWeight: '600',
     color: '#90574D',
     textAlign: 'center',
-    marginBottom: 12,
-    letterSpacing: 1,
+    marginBottom: 8,
+    letterSpacing: 0.5,
+  },
+  taglineText: {
+    fontSize: 24,
+    fontWeight: '500',
+    color: '#90574D',
+    textAlign: 'center',
+    marginBottom: 24,
+    letterSpacing: 0.3,
+  },
+  descriptionText: {
+    fontSize: 16,
+    color: '#90574D',
+    textAlign: 'center',
+    marginBottom: 8,
+    opacity: 0.85,
+    lineHeight: 22,
+    paddingHorizontal: 8,
   },
   subtitleText: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#90574D',
     textAlign: 'center',
-    marginBottom: 60,
-    opacity: 0.8,
-    lineHeight: 24,
+    marginBottom: 48,
+    opacity: 0.85,
+    lineHeight: 22,
+    paddingHorizontal: 8,
   },
   buttonContainer: {
     width: '100%',
     gap: 16,
+    paddingHorizontal: 16,
   },
   button: {
     height: 56,
@@ -87,10 +153,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#90574D',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
   },
   loginButton: {
     backgroundColor: '#90574D',
@@ -104,10 +170,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#FAEBD7',
+    letterSpacing: 0.3,
   },
   signupButtonText: {
     fontSize: 18,
     fontWeight: '600',
     color: '#90574D',
+    letterSpacing: 0.3,
   },
 });
