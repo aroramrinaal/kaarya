@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
 import { Animated, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-export default function AuthOptionsScreen() {
+export default function MainProductScreen() {
   const router = useRouter();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
@@ -44,12 +44,19 @@ export default function AuthOptionsScreen() {
     ]).start();
   }, [fontsLoaded]);
 
-  const handleLogin = () => {
-    router.push('/auth/login');
-  };
+  // Commented out for future authentication implementation
+  // const handleLogin = () => {
+  //   router.push('/auth/login');
+  // };
 
-  const handleSignup = () => {
-    router.push('/auth/signup');
+  // const handleSignup = () => {
+  //   router.push('/auth/signup');
+  // };
+
+  const handleGetStarted = () => {
+    // For now, this will just be a placeholder
+    // In the future, this will navigate to the actual todo interface
+    console.log('Get Started pressed - Todo interface coming soon!');
   };
 
   if (!fontsLoaded) {
@@ -92,8 +99,18 @@ export default function AuthOptionsScreen() {
           No badges. No clutter. Just tasks - and a timer if you need it.
         </Text>
         
-        {/* Button Container */}
+        {/* Main CTA Button - Authentication buttons commented out for now */}
         <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[styles.button, styles.mainButton]}
+            onPress={handleGetStarted}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.mainButtonText}>Get Started</Text>
+          </TouchableOpacity>
+
+          {/* Commented out for future authentication implementation */}
+          {/* 
           <TouchableOpacity
             style={[styles.button, styles.loginButton]}
             onPress={handleLogin}
@@ -109,7 +126,13 @@ export default function AuthOptionsScreen() {
           >
             <Text style={styles.signupButtonText}>Create an account</Text>
           </TouchableOpacity>
+          */}
         </View>
+
+        {/* Temporary note for development */}
+        <Text style={styles.devNote}>
+          🚧 Todo interface coming soon! 🚧
+        </Text>
       </Animated.View>
     </View>
   );
@@ -175,6 +198,7 @@ const styles = StyleSheet.create({
     width: '100%',
     gap: 16,
     paddingHorizontal: 16,
+    marginBottom: 24,
   },
   button: {
     height: 56,
@@ -187,6 +211,25 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 3,
   },
+  mainButton: {
+    backgroundColor: '#90574D',
+  },
+  mainButtonText: {
+    fontFamily: 'PlayfairDisplay-Medium',
+    fontSize: 18,
+    color: '#FAEBD7',
+    letterSpacing: 0.3,
+  },
+  devNote: {
+    fontFamily: 'PlayfairDisplay-Regular',
+    fontSize: 14,
+    color: '#90574D',
+    textAlign: 'center',
+    opacity: 0.6,
+    fontStyle: 'italic',
+  },
+  // Commented out styles for future authentication buttons
+  /*
   loginButton: {
     backgroundColor: '#90574D',
   },
@@ -207,4 +250,5 @@ const styles = StyleSheet.create({
     color: '#90574D',
     letterSpacing: 0.3,
   },
+  */
 });
