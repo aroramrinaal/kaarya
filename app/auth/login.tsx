@@ -1,5 +1,6 @@
+import * as Font from 'expo-font';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   Image,
@@ -19,6 +20,25 @@ import GoogleLogo from '../../assets/logos/google-logo.svg';
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  // Load fonts
+  useEffect(() => {
+    async function loadFonts() {
+      try {
+        await Font.loadAsync({
+          'PlayfairDisplay-Regular': require('../../assets/fonts/PlayfairDisplay-Regular.ttf'),
+          'PlayfairDisplay-Medium': require('../../assets/fonts/PlayfairDisplay-Medium.ttf'),
+          'PlayfairDisplay-SemiBold': require('../../assets/fonts/PlayfairDisplay-SemiBold.ttf'),
+          'PlayfairDisplay-Bold': require('../../assets/fonts/PlayfairDisplay-Bold.ttf'),
+        });
+        setFontsLoaded(true);
+      } catch (e) {
+        console.warn("Error loading fonts:", e);
+      }
+    }
+    loadFonts();
+  }, []);
 
   const handleEmailContinue = () => {
     if (!email.trim()) {
@@ -40,6 +60,11 @@ export default function LoginScreen() {
   const dismissKeyboard = () => {
     Keyboard.dismiss();
   };
+
+  if (!fontsLoaded) {
+    // Show nothing while fonts load
+    return <View style={styles.container} />;
+  }
 
   return (
     <TouchableWithoutFeedback onPress={dismissKeyboard}>
@@ -136,7 +161,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingBottom: 180, // Space for illustration
+    paddingBottom: 220, // More space for larger illustration
   },
   header: {
     paddingTop: 80,
@@ -144,19 +169,20 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   title: {
-    fontSize: 32,
-    fontWeight: '600',
+    fontFamily: 'PlayfairDisplay-Bold',
+    fontSize: 26,
     color: '#90574D',
     textAlign: 'center',
     marginBottom: 12,
-    lineHeight: 36,
+    lineHeight: 30,
   },
   subtitle: {
-    fontSize: 18,
+    fontFamily: 'PlayfairDisplay-Regular',
+    fontSize: 16,
     color: '#90574D',
     textAlign: 'center',
     opacity: 0.8,
-    lineHeight: 24,
+    lineHeight: 22,
   },
   form: {
     paddingHorizontal: 24,
@@ -164,12 +190,13 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   formLabel: {
-    fontSize: 16,
+    fontFamily: 'PlayfairDisplay-Regular',
+    fontSize: 14,
     color: '#90574D',
     textAlign: 'center',
     marginBottom: 24,
     opacity: 0.9,
-    lineHeight: 20,
+    lineHeight: 18,
   },
   emailInput: {
     height: 56,
@@ -201,13 +228,14 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   continueButtonText: {
+    fontFamily: 'PlayfairDisplay-Medium',
     fontSize: 16,
-    fontWeight: '600',
     color: '#FFFFFF',
     letterSpacing: 0.3,
   },
   dividerText: {
-    fontSize: 16,
+    fontFamily: 'PlayfairDisplay-Regular',
+    fontSize: 14,
     color: '#90574D',
     textAlign: 'center',
     opacity: 0.6,
@@ -229,8 +257,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   socialButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontFamily: 'PlayfairDisplay-Medium',
+    fontSize: 15,
     color: '#90574D',
     letterSpacing: 0.3,
   },
@@ -241,11 +269,12 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   termsText: {
-    fontSize: 12,
+    fontFamily: 'PlayfairDisplay-Regular',
+    fontSize: 11,
     color: '#90574D',
     textAlign: 'center',
     opacity: 0.7,
-    lineHeight: 16,
+    lineHeight: 14,
     marginTop: 20,
     paddingHorizontal: 16,
   },
@@ -254,14 +283,14 @@ const styles = StyleSheet.create({
     bottom: 20,
     left: 0,
     right: 0,
-    height: 180,
+    height: 220,
     justifyContent: 'center',
     alignItems: 'center',
     pointerEvents: 'none',
   },
   illustrationImage: {
-    width: 280,
-    height: 160,
+    width: 320,
+    height: 200,
     opacity: 0.6,
   },
 });
