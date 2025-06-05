@@ -1,13 +1,35 @@
+import * as Font from 'expo-font';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
+import { Animated, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function AuthOptionsScreen() {
   const router = useRouter();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
+  const [fontsLoaded, setFontsLoaded] = React.useState(false);
+
+  // Load fonts
+  useEffect(() => {
+    async function loadFonts() {
+      try {
+        await Font.loadAsync({
+          'PlayfairDisplay-Regular': require('../assets/fonts/PlayfairDisplay-Regular.ttf'),
+          'PlayfairDisplay-Medium': require('../assets/fonts/PlayfairDisplay-Medium.ttf'),
+          'PlayfairDisplay-SemiBold': require('../assets/fonts/PlayfairDisplay-SemiBold.ttf'),
+          'PlayfairDisplay-Bold': require('../assets/fonts/PlayfairDisplay-Bold.ttf'),
+        });
+        setFontsLoaded(true);
+      } catch (e) {
+        console.warn("Error loading fonts:", e);
+      }
+    }
+    loadFonts();
+  }, []);
 
   useEffect(() => {
+    if (!fontsLoaded) return;
+    
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -20,7 +42,7 @@ export default function AuthOptionsScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [fontsLoaded]);
 
   const handleLogin = () => {
     router.push('/auth/login');
@@ -29,6 +51,11 @@ export default function AuthOptionsScreen() {
   const handleSignup = () => {
     router.push('/auth/signup');
   };
+
+  if (!fontsLoaded) {
+    // Show nothing while fonts load
+    return <View style={styles.container} />;
+  }
 
   return (
     <View style={styles.container}>
@@ -109,22 +136,23 @@ const styles = StyleSheet.create({
     height: 250,
   },
   welcomeText: {
+    fontFamily: 'PlayfairDisplay-Bold',
     fontSize: 32,
-    fontWeight: '600',
     color: '#90574D',
     textAlign: 'center',
     marginBottom: 8,
     letterSpacing: 0.5,
   },
   taglineText: {
+    fontFamily: 'PlayfairDisplay-SemiBold',
     fontSize: 24,
-    fontWeight: '500',
     color: '#90574D',
     textAlign: 'center',
     marginBottom: 24,
     letterSpacing: 0.3,
   },
   descriptionText: {
+    fontFamily: 'PlayfairDisplay-Regular',
     fontSize: 16,
     color: '#90574D',
     textAlign: 'center',
@@ -134,6 +162,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   subtitleText: {
+    fontFamily: 'PlayfairDisplay-Regular',
     fontSize: 16,
     color: '#90574D',
     textAlign: 'center',
@@ -167,14 +196,14 @@ const styles = StyleSheet.create({
     borderColor: '#90574D',
   },
   loginButtonText: {
+    fontFamily: 'PlayfairDisplay-Medium',
     fontSize: 18,
-    fontWeight: '600',
     color: '#FAEBD7',
     letterSpacing: 0.3,
   },
   signupButtonText: {
+    fontFamily: 'PlayfairDisplay-Medium',
     fontSize: 18,
-    fontWeight: '600',
     color: '#90574D',
     letterSpacing: 0.3,
   },
