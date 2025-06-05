@@ -130,11 +130,6 @@ export default function MainProductScreen() {
           </TouchableOpacity>
           */}
         </View>
-
-        {/* Temporary note for development */}
-        <Text style={styles.devNote}>
-          🚧 Todo interface coming soon! 🚧
-        </Text>
       </Animated.View>
     </View>
   );
@@ -223,14 +218,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#FAEBD7',
     letterSpacing: 0.3,
-  },
-  devNote: {
-    fontFamily: 'PlayfairDisplay-Regular',
-    fontSize: 14,
-    color: '#90574D',
-    textAlign: 'center',
-    opacity: 0.6,
-    fontStyle: 'italic',
   },
   // Commented out styles for future authentication buttons
   /*
