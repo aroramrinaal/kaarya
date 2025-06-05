@@ -1,3 +1,4 @@
+import * as Font from 'expo-font';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -11,12 +12,38 @@ const WORD_VARIANTS = [
   'Kaarya' // Final word
 ];
 
+const loadFonts = async () => {
+  await Font.loadAsync({
+    'PlayfairDisplay-Regular': require('../assets/fonts/PlayfairDisplay-Regular.ttf'),
+    'PlayfairDisplay-Medium': require('../assets/fonts/PlayfairDisplay-Medium.ttf'),
+    'PlayfairDisplay-SemiBold': require('../assets/fonts/PlayfairDisplay-SemiBold.ttf'),
+    'PlayfairDisplay-Bold': require('../assets/fonts/PlayfairDisplay-Bold.ttf'),
+    'PlayfairDisplay-Black': require('../assets/fonts/PlayfairDisplay-Black.ttf'),
+  });
+};
+
 export default function WelcomeScreen() {
   const router = useRouter();
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [showFinalWord, setShowFinalWord] = useState(false);
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  // Load fonts
+  useEffect(() => {
+    async function prepare() {
+      try {
+        await loadFonts();
+        setFontsLoaded(true);
+      } catch (e) {
+        console.warn("Error loading fonts:", e);
+      }
+    }
+    prepare();
+  }, []);
 
   useEffect(() => {
+    if (!fontsLoaded) return;
+    
     const cycleWords = () => {
       if (currentWordIndex < WORD_VARIANTS.length - 1) {
         setTimeout(() => {
@@ -28,11 +55,16 @@ export default function WelcomeScreen() {
     };
 
     cycleWords();
-  }, [currentWordIndex]);
+  }, [currentWordIndex, fontsLoaded]);
 
   const handleNext = () => {
     router.replace('/main');
   };
+
+  if (!fontsLoaded) {
+    // Show nothing while fonts load
+    return <View style={styles.container} />;
+  }
 
   return (
     <View style={styles.container}>
@@ -66,8 +98,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   mainText: {
+    fontFamily: 'PlayfairDisplay-Bold',
     fontSize: 64,
-    fontWeight: '700',
     color: '#90574D',
     textAlign: 'center',
     letterSpacing: 2,
