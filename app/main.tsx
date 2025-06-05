@@ -56,7 +56,7 @@ export default function MainProductScreen() {
   const handleGetStarted = () => {
     // For now, this will just be a placeholder
     // In the future, this will navigate to the actual todo interface
-    console.log('Get Started pressed - Todo interface coming soon!');
+    // console.log('Get Started pressed - Todo interface coming soon!');
   };
 
   if (!fontsLoaded) {
@@ -84,11 +84,13 @@ export default function MainProductScreen() {
           />
         </View>
         
-        {/* Welcome Text */}
+        {/* Welcome Text - now smaller and secondary */}
         <Text style={styles.welcomeText}>Welcome to Kaarya</Text>
         
-        {/* Tagline */}
-        <Text style={styles.taglineText}>All Action. Zero Drama</Text>
+        {/* Tagline - now the main hero text */}
+        <Text style={styles.taglineText} numberOfLines={1} adjustsFontSizeToFit>
+          All Action. Zero Drama
+        </Text>
         
         {/* Description */}
         <Text style={styles.descriptionText}>
@@ -159,20 +161,22 @@ const styles = StyleSheet.create({
     height: 250,
   },
   welcomeText: {
+    fontFamily: 'PlayfairDisplay-Medium',
+    fontSize: 20,
+    color: '#90574D',
+    textAlign: 'center',
+    marginBottom: 8,
+    letterSpacing: 0.3,
+    opacity: 0.9,
+  },
+  taglineText: {
     fontFamily: 'PlayfairDisplay-Bold',
     fontSize: 32,
     color: '#90574D',
     textAlign: 'center',
-    marginBottom: 8,
-    letterSpacing: 0.5,
-  },
-  taglineText: {
-    fontFamily: 'PlayfairDisplay-SemiBold',
-    fontSize: 24,
-    color: '#90574D',
-    textAlign: 'center',
     marginBottom: 24,
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
+    lineHeight: 36,
   },
   descriptionText: {
     fontFamily: 'PlayfairDisplay-Regular',
