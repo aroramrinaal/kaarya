@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import {
   Alert,
   Image,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
@@ -10,9 +11,10 @@ import {
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  Keyboard,
   View
 } from 'react-native';
+import AppleLogo from '../../assets/logos/apple-logo.svg';
+import GoogleLogo from '../../assets/logos/google-logo.svg';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -90,7 +92,10 @@ export default function LoginScreen() {
               onPress={handleGoogleSignIn}
               activeOpacity={0.8}
             >
-              <Text style={styles.socialButtonText}>G Continue with Google</Text>
+              <View style={styles.socialButtonContent}>
+                <GoogleLogo width={24} height={24} />
+                <Text style={styles.socialButtonText}>Continue with Google</Text>
+              </View>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -98,7 +103,10 @@ export default function LoginScreen() {
               onPress={handleAppleSignIn}
               activeOpacity={0.8}
             >
-              <Text style={styles.socialButtonText}>🍎 Continue with Apple</Text>
+              <View style={styles.socialButtonContent}>
+                <AppleLogo width={24} height={24} />
+                <Text style={styles.socialButtonText}>Continue with Apple</Text>
+              </View>
             </TouchableOpacity>
 
             {/* Terms */}
@@ -225,6 +233,12 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#90574D',
     letterSpacing: 0.3,
+  },
+  socialButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
   },
   termsText: {
     fontSize: 12,
