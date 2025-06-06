@@ -2,6 +2,7 @@ import * as Font from 'expo-font';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
 import { Animated, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { onboardingStorage } from '../utils/storage';
 
 export default function MainProductScreen() {
   const router = useRouter();
@@ -53,8 +54,15 @@ export default function MainProductScreen() {
   //   router.push('/auth/signup');
   // };
 
-  const handleGetStarted = () => {
-    router.replace('/todo');
+  const handleGetStarted = async () => {
+    try {
+      await onboardingStorage.markOnboardingAsSeen();
+      router.replace('/todo');
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+      // Still navigate even if storage fails
+      router.replace('/todo');
+    }
   };
 
   if (!fontsLoaded) {

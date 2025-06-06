@@ -2,6 +2,7 @@ import * as Font from 'expo-font';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { onboardingStorage } from '../utils/storage';
 
 // Simple word transitions - no animations, just text cycling
 const WORD_VARIANTS = [
@@ -27,22 +28,42 @@ export default function WelcomeScreen() {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [showFinalWord, setShowFinalWord] = useState(false);
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true);
 
-  // Load fonts
+  // Check onboarding status and load fonts
   useEffect(() => {
-    async function prepare() {
+    async function initialize() {
       try {
+        // Check if user has seen onboarding
+        const hasSeenOnboarding = await onboardingStorage.hasSeenOnboarding();
+        
+        if (hasSeenOnboarding) {
+          // User has seen onboarding, go directly to todo
+          router.replace('/todo');
+          return;
+        }
+        
+        // User hasn't seen onboarding, load fonts and show welcome screen
         await loadFonts();
         setFontsLoaded(true);
+        setIsCheckingOnboarding(false);
       } catch (e) {
-        console.warn("Error loading fonts:", e);
+        console.warn("Error during initialization:", e);
+        // On error, proceed with onboarding
+        try {
+          await loadFonts();
+          setFontsLoaded(true);
+        } catch (fontError) {
+          console.warn("Error loading fonts:", fontError);
+        }
+        setIsCheckingOnboarding(false);
       }
     }
-    prepare();
+    initialize();
   }, []);
 
   useEffect(() => {
-    if (!fontsLoaded) return;
+    if (!fontsLoaded || isCheckingOnboarding) return;
     
     const cycleWords = () => {
       if (currentWordIndex < WORD_VARIANTS.length - 1) {
@@ -55,14 +76,14 @@ export default function WelcomeScreen() {
     };
 
     cycleWords();
-  }, [currentWordIndex, fontsLoaded]);
+  }, [currentWordIndex, fontsLoaded, isCheckingOnboarding]);
 
   const handleNext = () => {
     router.replace('/main');
   };
 
-  if (!fontsLoaded) {
-    // Show nothing while fonts load
+  if (isCheckingOnboarding || !fontsLoaded) {
+    // Show nothing while checking onboarding status or loading fonts
     return <View style={styles.container} />;
   }
 
