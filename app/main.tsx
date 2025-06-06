@@ -54,9 +54,7 @@ export default function MainProductScreen() {
   // };
 
   const handleGetStarted = () => {
-    // For now, this will just be a placeholder
-    // In the future, this will navigate to the actual todo interface
-    // console.log('Get Started pressed - Todo interface coming soon!');
+    router.push('/todo');
   };
 
   if (!fontsLoaded) {
