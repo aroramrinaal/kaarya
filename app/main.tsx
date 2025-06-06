@@ -54,7 +54,7 @@ export default function MainProductScreen() {
   // };
 
   const handleGetStarted = () => {
-    router.push('/todo');
+    router.replace('/todo');
   };
 
   if (!fontsLoaded) {

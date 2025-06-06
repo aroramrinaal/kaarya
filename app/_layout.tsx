@@ -8,7 +8,14 @@ export default function RootLayout() {
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="main" options={{ headerShown: false }} />
-        <Stack.Screen name="todo" options={{ headerShown: false }} />
+        <Stack.Screen 
+          name="todo" 
+          options={{ 
+            headerShown: false,
+            gestureEnabled: false,
+            headerBackVisible: false,
+          }} 
+        />
         {/* Commented out for future authentication implementation */}
         {/* <Stack.Screen name="auth" options={{ headerShown: false }} /> */}
         {/* <Stack.Screen name="(authenticated)" options={{ headerShown: false }} /> */}
