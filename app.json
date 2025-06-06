@@ -4,12 +4,12 @@
     "slug": "kaarya",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/icons/kaarya-v1-icon.png",
     "scheme": "kaarya",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.aroramrinaal.kaarya",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -17,7 +17,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/icons/kaarya-v1-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true
