@@ -13,7 +13,9 @@
       "bundleIdentifier": "com.aroramrinaal.kaarya",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "icon": "./assets/icons/kaarya-v1-icon.png",
+      "requireFullScreen": true
     },
     "android": {
       "adaptiveIcon": {
