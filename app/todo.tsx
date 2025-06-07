@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   },
   logoText: {
     fontFamily: 'PlayfairDisplay-Bold',
-    fontSize: 36,
+    fontSize: 40,
     color: '#90574D',
     fontWeight: '700',
   },
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     marginBottom: 60,
   },
   dateText: {
-    fontFamily: 'PlayfairDisplay-Medium',
+    fontFamily: 'PlayfairDisplay-Bold',
     fontSize: 16,
     color: '#90574D',
     fontStyle: 'italic',
