@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
   },
   logoText: {
     fontFamily: 'PlayfairDisplay-Bold',
-    fontSize: 28,
+    fontSize: 36,
     color: '#90574D',
     fontWeight: '700',
   },
