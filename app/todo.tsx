@@ -199,8 +199,10 @@ export default function TodoScreen() {
           activeOpacity={1}
           onPress={() => setIsAddModalVisible(false)}
         >
-          <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
-            <Text style={styles.modalTitle}>Add New Task</Text>
+                     <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
+             {/* Drag Indicator */}
+             <View style={styles.dragIndicator} />
+             <Text style={styles.modalTitle}>Add New Task</Text>
             <TextInput
               style={styles.taskInput}
               placeholder="What needs to be done?"
@@ -384,6 +386,16 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     width: '100%',
+  },
+  dragIndicator: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#90574D',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: -16,
+    marginBottom: 24,
+    opacity: 0.3,
   },
   modalTitle: {
     fontFamily: 'PlayfairDisplay-Bold',
