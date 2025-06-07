@@ -1,10 +1,26 @@
 import * as Font from 'expo-font';
 import React, { useEffect, useState } from 'react';
-import { StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  FlatList,
+  Keyboard,
+  Modal,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
+import { Task, taskStorage } from '../utils/storage';
 
 export default function TodoScreen() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [currentDate, setCurrentDate] = useState('');
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const [newTaskText, setNewTaskText] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
   // Load fonts
   useEffect(() => {
@@ -45,12 +61,88 @@ export default function TodoScreen() {
     setCurrentDate(finalDate);
   }, []);
 
+  // Load tasks on mount
+  useEffect(() => {
+    loadTasks();
+  }, []);
+
+  const loadTasks = async () => {
+    setIsLoading(true);
+    try {
+      const todayTasks = await taskStorage.getTodayTasks();
+      setTasks(todayTasks);
+    } catch (error) {
+      console.error('Error loading tasks:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddTask = async () => {
+    if (!newTaskText.trim()) return;
+
+    const newTask = await taskStorage.addTask(newTaskText.trim());
+    if (newTask) {
+      setTasks([...tasks, newTask]);
+      setNewTaskText('');
+      setIsAddModalVisible(false);
+      Keyboard.dismiss();
+    }
+  };
+
+  const handleToggleTask = async (taskId: string) => {
+    const success = await taskStorage.toggleTask(taskId);
+    if (success) {
+      setTasks(tasks.map(task =>
+        task.id === taskId ? { ...task, completed: !task.completed } : task
+      ));
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    const success = await taskStorage.deleteTask(taskId);
+    if (success) {
+      setTasks(tasks.filter(task => task.id !== taskId));
+    }
+  };
+
+  const renderRightActions = (taskId: string) => {
+    return (
+      <View style={styles.deleteAction}>
+        <Text style={styles.deleteText}>Delete</Text>
+      </View>
+    );
+  };
+
+  const renderTask = ({ item }: { item: Task }) => {
+    return (
+      <Swipeable
+        renderRightActions={() => renderRightActions(item.id)}
+        onSwipeableOpen={() => handleDeleteTask(item.id)}
+        rightThreshold={100}
+      >
+        <TouchableOpacity
+          style={styles.taskItem}
+          onPress={() => handleToggleTask(item.id)}
+          activeOpacity={0.7}
+        >
+          <View style={[styles.checkbox, item.completed && styles.checkboxCompleted]}>
+            {item.completed && <Text style={styles.checkmark}>✓</Text>}
+          </View>
+          <Text style={[styles.taskText, item.completed && styles.taskTextCompleted]}>
+            {item.text}
+          </Text>
+        </TouchableOpacity>
+      </Swipeable>
+    );
+  };
+
   if (!fontsLoaded) {
     return <View style={styles.container} />;
   }
 
   return (
-    <View style={styles.container}>
+    <GestureHandlerRootView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FAEBD7" />
       
       {/* Header */}
@@ -71,17 +163,75 @@ export default function TodoScreen() {
       </View>
 
       {/* Main Content */}
-      <View style={styles.mainContent}>
-        <Text style={styles.mainMessage}>
-          You don't have any tasks yet. Press + to create your first Kaarya.
-        </Text>
-      </View>
+      {!isLoading && tasks.length === 0 ? (
+        <View style={styles.mainContent}>
+          <Text style={styles.mainMessage}>
+            You don't have any tasks yet. Press + to create your first Kaarya.
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={tasks}
+          renderItem={renderTask}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.taskList}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
 
       {/* Add Button */}
-      <TouchableOpacity style={styles.addButton}>
+      <TouchableOpacity 
+        style={styles.addButton}
+        onPress={() => setIsAddModalVisible(true)}
+      >
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
-    </View>
+
+      {/* Add Task Modal */}
+      <Modal
+        visible={isAddModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setIsAddModalVisible(false)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setIsAddModalVisible(false)}
+        >
+          <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
+            <Text style={styles.modalTitle}>Add New Task</Text>
+            <TextInput
+              style={styles.taskInput}
+              placeholder="What needs to be done?"
+              placeholderTextColor="#90574D66"
+              value={newTaskText}
+              onChangeText={setNewTaskText}
+              autoFocus
+              multiline
+              maxLength={100}
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => {
+                  setIsAddModalVisible(false);
+                  setNewTaskText('');
+                }}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.saveButton]}
+                onPress={handleAddTask}
+              >
+                <Text style={styles.saveButtonText}>Add Task</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </GestureHandlerRootView>
   );
 }
 
@@ -171,5 +321,116 @@ const styles = StyleSheet.create({
     fontWeight: '200',
     lineHeight: 36,
     marginTop: -2,
+  },
+  deleteAction: {
+    backgroundColor: '#FF3B30',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 100,
+  },
+  deleteText: {
+    fontSize: 16,
+    color: '#FAEBD7',
+    fontWeight: 'bold',
+  },
+  taskItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 0,
+    backgroundColor: '#FAEBD7',
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderWidth: 2,
+    borderColor: '#90574D',
+    borderRadius: 4,
+    marginRight: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxCompleted: {
+    backgroundColor: '#90574D',
+    borderColor: '#90574D',
+  },
+  checkmark: {
+    fontSize: 14,
+    color: '#FAEBD7',
+    fontWeight: 'bold',
+  },
+  taskText: {
+    fontFamily: 'PlayfairDisplay-Regular',
+    fontSize: 18,
+    color: '#90574D',
+    flex: 1,
+  },
+  taskTextCompleted: {
+    textDecorationLine: 'line-through',
+    opacity: 0.6,
+  },
+  taskList: {
+    paddingHorizontal: 32,
+    paddingTop: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#FAEBD7',
+    padding: 32,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    width: '100%',
+  },
+  modalTitle: {
+    fontFamily: 'PlayfairDisplay-Bold',
+    fontSize: 24,
+    color: '#90574D',
+    marginBottom: 24,
+  },
+  taskInput: {
+    fontFamily: 'PlayfairDisplay-Regular',
+    fontSize: 18,
+    color: '#90574D',
+    padding: 16,
+    borderWidth: 2,
+    borderColor: '#90574D',
+    borderRadius: 8,
+    marginBottom: 8,
+    minHeight: 60,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 24,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginHorizontal: 8,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: '#90574D',
+  },
+  cancelButtonText: {
+    fontFamily: 'PlayfairDisplay-Medium',
+    fontSize: 16,
+    color: '#90574D',
+  },
+  saveButton: {
+    backgroundColor: '#90574D',
+  },
+  saveButtonText: {
+    fontFamily: 'PlayfairDisplay-Medium',
+    fontSize: 16,
+    color: '#FAEBD7',
   },
 }); 
