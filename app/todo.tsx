@@ -3,7 +3,9 @@ import React, { useEffect, useState } from 'react';
 import {
   FlatList,
   Keyboard,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   StatusBar,
   StyleSheet,
   Text,
@@ -188,18 +190,22 @@ export default function TodoScreen() {
       </TouchableOpacity>
 
       {/* Add Task Modal */}
-      <Modal
+            <Modal
         visible={isAddModalVisible}
         transparent
         animationType="slide"
         onRequestClose={() => setIsAddModalVisible(false)}
       >
-        <TouchableOpacity 
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setIsAddModalVisible(false)}
+        <KeyboardAvoidingView 
+          style={styles.keyboardAvoidingView}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-                     <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
+          <TouchableOpacity 
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setIsAddModalVisible(false)}
+          >
+            <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
              {/* Drag Indicator */}
              <View style={styles.dragIndicator} />
              <Text style={styles.modalTitle}>Add New Task</Text>
@@ -230,8 +236,9 @@ export default function TodoScreen() {
                 <Text style={styles.saveButtonText}>Add Task</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </KeyboardAvoidingView>
       </Modal>
     </GestureHandlerRootView>
   );
@@ -374,6 +381,9 @@ const styles = StyleSheet.create({
   taskList: {
     paddingHorizontal: 32,
     paddingTop: 16,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
   },
   modalOverlay: {
     flex: 1,
