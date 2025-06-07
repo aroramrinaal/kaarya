@@ -149,14 +149,17 @@ export default function TodoScreen() {
       
       {/* Header */}
       <View style={styles.header}>
+        <View style={styles.headerLeft} />
         <Text style={styles.logoText}>कार्य</Text>
-        <TouchableOpacity style={styles.menuButton}>
-          <View style={styles.menuDots}>
-            <View style={styles.dot} />
-            <View style={styles.dot} />
-            <View style={styles.dot} />
-          </View>
-        </TouchableOpacity>
+        <View style={styles.headerRight}>
+          <TouchableOpacity style={styles.menuButton}>
+            <View style={styles.menuDots}>
+              <View style={styles.dot} />
+              <View style={styles.dot} />
+              <View style={styles.dot} />
+            </View>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Date */}
@@ -256,6 +259,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     paddingTop: 60,
     paddingBottom: 24,
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  headerRight: {
+    flex: 1,
+    alignItems: 'flex-end',
   },
   logoText: {
     fontFamily: 'PlayfairDisplay-Bold',
