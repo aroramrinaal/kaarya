@@ -1,6 +1,7 @@
 import * as Font from 'expo-font';
 import React, { useEffect, useState } from 'react';
 import {
+  Animated,
   FlatList,
   Keyboard,
   KeyboardAvoidingView,
@@ -14,6 +15,7 @@ import {
   View
 } from 'react-native';
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
+import { SvgXml } from 'react-native-svg';
 import { Task, taskStorage } from '../utils/storage';
 
 export default function TodoScreen() {
@@ -108,10 +110,60 @@ export default function TodoScreen() {
     }
   };
 
-  const renderRightActions = (taskId: string) => {
+  // Load SVG content
+  const [trashSvg, setTrashSvg] = useState('');
+
+  useEffect(() => {
+    // Load the SVG file
+    const loadSvg = async () => {
+      try {
+        const svgContent = await fetch(require('../assets/logos/trash_bin.svg'))
+          .then(response => response.text());
+        setTrashSvg(svgContent);
+      } catch (error) {
+        console.warn('Error loading SVG:', error);
+        // Fallback SVG if file doesn't load
+        setTrashSvg(`
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6" stroke="#90574D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        `);
+      }
+    };
+    loadSvg();
+  }, []);
+
+  // Custom right actions for swipe to delete
+  const renderRightActions = (taskId: string, progress: Animated.AnimatedAddition<number>, dragX: Animated.AnimatedAddition<number>) => {
+    const scale = dragX.interpolate({
+      inputRange: [-100, -50, 0],
+      outputRange: [1, 0.9, 0],
+      extrapolate: 'clamp',
+    });
+
+    const opacity = dragX.interpolate({
+      inputRange: [-100, -50, 0],
+      outputRange: [1, 0.7, 0],
+      extrapolate: 'clamp',
+    });
+
     return (
-      <View style={styles.deleteAction}>
-        <Text style={styles.deleteText}>Delete</Text>
+      <View style={styles.deleteActionContainer}>
+        <Animated.View style={[styles.deleteAction, { opacity, transform: [{ scale }] }]}>
+          <View style={styles.trashIconContainer}>
+            {trashSvg ? (
+              <SvgXml 
+                xml={trashSvg.replace(/fill="[^"]*"/g, `fill="#90574D"`).replace(/stroke="[^"]*"/g, `stroke="#90574D"`)} 
+                width="22" 
+                height="22" 
+              />
+            ) : (
+              <View style={styles.fallbackIcon}>
+                <Text style={styles.fallbackIconText}>🗑</Text>
+              </View>
+            )}
+          </View>
+        </Animated.View>
       </View>
     );
   };
@@ -119,22 +171,30 @@ export default function TodoScreen() {
   const renderTask = ({ item }: { item: Task }) => {
     return (
       <Swipeable
-        renderRightActions={() => renderRightActions(item.id)}
-        onSwipeableOpen={() => handleDeleteTask(item.id)}
-        rightThreshold={100}
+        renderRightActions={(progress, dragX) => renderRightActions(item.id, progress, dragX)}
+        onSwipeableOpen={(direction) => {
+          if (direction === 'right') {
+            handleDeleteTask(item.id);
+          }
+        }}
+        rightThreshold={80}
+        friction={2}
+        enableTrackpadTwoFingerGesture={true}
       >
-        <TouchableOpacity
-          style={styles.taskItem}
-          onPress={() => handleToggleTask(item.id)}
-          activeOpacity={0.7}
-        >
-          <View style={[styles.checkbox, item.completed && styles.checkboxCompleted]}>
-            {item.completed && <Text style={styles.checkmark}>✓</Text>}
-          </View>
-          <Text style={[styles.taskText, item.completed && styles.taskTextCompleted]}>
-            {item.text}
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.taskContainer}>
+          <TouchableOpacity
+            style={styles.taskItem}
+            onPress={() => handleToggleTask(item.id)}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.checkbox, item.completed && styles.checkboxCompleted]}>
+              {item.completed && <Text style={styles.checkmark}>✓</Text>}
+            </View>
+            <Text style={[styles.taskText, item.completed && styles.taskTextCompleted]}>
+              {item.text}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </Swipeable>
     );
   };
@@ -193,7 +253,7 @@ export default function TodoScreen() {
       </TouchableOpacity>
 
       {/* Add Task Modal */}
-            <Modal
+      <Modal
         visible={isAddModalVisible}
         transparent
         animationType="slide"
@@ -341,23 +401,48 @@ const styles = StyleSheet.create({
     lineHeight: 36,
     marginTop: -2,
   },
+  // Custom Slide to Delete Styles
+  taskContainer: {
+    marginHorizontal: 32,
+    marginVertical: 4,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#FAEBD7',
+  },
+  deleteActionContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    paddingRight: 0,
+  },
   deleteAction: {
-    backgroundColor: '#FF3B30',
+    backgroundColor: '#E8D5C4', // Slightly darker beige to match design
+    width: 80,
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    width: 100,
+    borderTopRightRadius: 12,
+    borderBottomRightRadius: 12,
   },
-  deleteText: {
-    fontSize: 16,
-    color: '#FAEBD7',
-    fontWeight: 'bold',
+  trashIconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fallbackIcon: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fallbackIconText: {
+    fontSize: 18,
+    color: '#90574D',
   },
   taskItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 16,
-    paddingHorizontal: 0,
+    paddingHorizontal: 16,
     backgroundColor: '#FAEBD7',
+    minHeight: 60,
   },
   checkbox: {
     width: 24,
@@ -389,8 +474,8 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   taskList: {
-    paddingHorizontal: 32,
     paddingTop: 16,
+    paddingBottom: 120,
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -465,4 +550,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#FAEBD7',
   },
-}); 
+});
