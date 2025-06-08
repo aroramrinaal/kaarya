@@ -472,9 +472,15 @@ const styles = StyleSheet.create({
   dot: {
     width: 6,
     height: 6,
-    borderRadius: 3,
+    borderRadius: 5,
     backgroundColor: '#90574D',
-    marginVertical: 2.5,
+    marginVertical: 3,
+    opacity: 1,
+    shadowColor: '#90574D',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.25,
+    shadowRadius: 1.5,
+    elevation: 2,
   },
   dateContainer: {
     paddingHorizontal: 32,
