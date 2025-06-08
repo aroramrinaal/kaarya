@@ -37,25 +37,20 @@ const TaskItem = React.memo(({
     progress: Animated.AnimatedAddition<number>, 
     dragX: Animated.AnimatedAddition<number>
   ) => {
-    // Improved interpolation ranges for smoother animation and better snap behavior
+    // Fixed interpolation ranges to prevent task from sliding out completely
     const scale = dragX.interpolate({
-      inputRange: [-100, -80, -50, 0],
-      outputRange: [1, 1, 0.9, 0],
+      inputRange: [-80, -40, 0],
+      outputRange: [1, 0.9, 0.8],
       extrapolate: 'clamp',
     });
 
     const opacity = dragX.interpolate({
-      inputRange: [-100, -80, -50, 0],
-      outputRange: [1, 1, 0.8, 0],
+      inputRange: [-80, -40, 0],
+      outputRange: [1, 0.8, 0],
       extrapolate: 'clamp',
     });
 
-    const translateX = dragX.interpolate({
-      inputRange: [-100, -80, -50, 0],
-      outputRange: [-10, 0, 10, 80],
-      extrapolate: 'clamp',
-    });
-
+    // Remove translateX to prevent sliding issues
     return (
       <View style={styles.deleteActionContainer}>
         <Animated.View 
@@ -63,7 +58,7 @@ const TaskItem = React.memo(({
             styles.deleteAction, 
             { 
               opacity, 
-              transform: [{ scale }, { translateX }] 
+              transform: [{ scale }] 
             }
           ]}
         >
@@ -124,9 +119,9 @@ const TaskItem = React.memo(({
       renderRightActions={renderRightActions}
       onSwipeableOpen={handleSwipeOpen}
       onSwipeableWillOpen={handleSwipeWillOpen}
-      rightThreshold={50} // Further reduced for easier trigger
+      rightThreshold={30} // Adjusted for better control
       leftThreshold={1000} // High value to prevent left swipe
-      friction={1.2} // Even smoother
+      friction={2} // Increased friction for more control
       overshootRight={false} // Prevent over-swiping
       overshootLeft={false}
       overshootFriction={8} // Helps with bounce-back feel
@@ -210,24 +205,14 @@ export default function TodoScreen() {
     loadTasks();
   }, []);
 
-  // Load SVG content with better error handling
+  // Set SVG content directly (fixing the loading issue)
   useEffect(() => {
-    const loadSvg = async () => {
-      try {
-        const svgContent = await fetch(require('../assets/logos/trash_bin.svg'))
-          .then(response => response.text());
-        setTrashSvg(svgContent);
-      } catch (error) {
-        console.warn('Error loading SVG:', error);
-        // Improved fallback SVG
-        setTrashSvg(`
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6" stroke="#90574D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        `);
-      }
-    };
-    loadSvg();
+    // Use inline SVG instead of trying to fetch local assets
+    setTrashSvg(`
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6" stroke="#90574D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    `);
   }, []);
 
   const loadTasks = async () => {
@@ -550,9 +535,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   deleteActionContainer: {
-    flex: 1,
+    width: 80,
     justifyContent: 'center',
-    alignItems: 'flex-end',
+    alignItems: 'center',
     backgroundColor: '#E8D5C4',
     borderTopRightRadius: 12,
     borderBottomRightRadius: 12,
