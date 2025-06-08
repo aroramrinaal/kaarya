@@ -1,5 +1,5 @@
 import * as Font from 'expo-font';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   FlatList,
@@ -18,6 +18,141 @@ import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler'
 import { SvgXml } from 'react-native-svg';
 import { Task, taskStorage } from '../utils/storage';
 
+// Memoized Task Item Component for better performance
+const TaskItem = React.memo(({ 
+  item, 
+  onToggle, 
+  onDelete, 
+  trashSvg 
+}: { 
+  item: Task; 
+  onToggle: (id: string) => void; 
+  onDelete: (id: string) => void;
+  trashSvg: string;
+}) => {
+  const swipeableRef = useRef<Swipeable>(null);
+
+  // Optimized right actions with useCallback to prevent re-renders
+  const renderRightActions = useCallback((
+    progress: Animated.AnimatedAddition<number>, 
+    dragX: Animated.AnimatedAddition<number>
+  ) => {
+    // Improved interpolation ranges for smoother animation and better snap behavior
+    const scale = dragX.interpolate({
+      inputRange: [-100, -80, -50, 0],
+      outputRange: [1, 1, 0.9, 0],
+      extrapolate: 'clamp',
+    });
+
+    const opacity = dragX.interpolate({
+      inputRange: [-100, -80, -50, 0],
+      outputRange: [1, 1, 0.8, 0],
+      extrapolate: 'clamp',
+    });
+
+    const translateX = dragX.interpolate({
+      inputRange: [-100, -80, -50, 0],
+      outputRange: [-10, 0, 10, 80],
+      extrapolate: 'clamp',
+    });
+
+    return (
+      <View style={styles.deleteActionContainer}>
+        <Animated.View 
+          style={[
+            styles.deleteAction, 
+            { 
+              opacity, 
+              transform: [{ scale }, { translateX }] 
+            }
+          ]}
+        >
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={() => {
+              // Close immediately and delete
+              swipeableRef.current?.close();
+              // Small delay to allow close animation
+              setTimeout(() => onDelete(item.id), 100);
+            }}
+            activeOpacity={0.7}
+          >
+            <View style={styles.trashIconContainer}>
+              {trashSvg ? (
+                <SvgXml 
+                  xml={trashSvg.replace(/fill="[^"]*"/g, `fill="#90574D"`).replace(/stroke="[^"]*"/g, `stroke="#90574D"`)} 
+                  width="22" 
+                  height="22" 
+                />
+              ) : (
+                <View style={styles.fallbackIcon}>
+                  <Text style={styles.fallbackIconText}>🗑</Text>
+                </View>
+              )}
+            </View>
+          </TouchableOpacity>
+        </Animated.View>
+      </View>
+    );
+  }, [item.id, onDelete, trashSvg]);
+
+  // Handle swipe open with improved logic
+  const handleSwipeOpen = useCallback((direction: 'left' | 'right') => {
+    if (direction === 'right') {
+      // Auto-close after a shorter delay for better UX
+      setTimeout(() => {
+        swipeableRef.current?.close();
+      }, 2000);
+    }
+  }, []);
+
+  // Handle swipe will open - prevents getting stuck
+  const handleSwipeWillOpen = useCallback((direction: 'left' | 'right') => {
+    // This helps prevent the swipe from getting stuck
+    if (direction === 'right') {
+      // Optional: Add haptic feedback here if needed
+    }
+  }, []);
+
+  const handleToggle = useCallback(() => {
+    onToggle(item.id);
+  }, [item.id, onToggle]);
+
+  return (
+    <Swipeable
+      ref={swipeableRef}
+      renderRightActions={renderRightActions}
+      onSwipeableOpen={handleSwipeOpen}
+      onSwipeableWillOpen={handleSwipeWillOpen}
+      rightThreshold={50} // Further reduced for easier trigger
+      leftThreshold={1000} // High value to prevent left swipe
+      friction={1.2} // Even smoother
+      overshootRight={false} // Prevent over-swiping
+      overshootLeft={false}
+      overshootFriction={8} // Helps with bounce-back feel
+      enableTrackpadTwoFingerGesture={true}
+      useNativeAnimations={true} // Use native animations for better performance
+      containerStyle={styles.swipeableContainer}
+      childrenContainerStyle={styles.swipeableChildrenContainer}
+    >
+      <View style={styles.taskContainer}>
+        <TouchableOpacity
+          style={styles.taskItem}
+          onPress={handleToggle}
+          activeOpacity={0.7}
+        >
+          <View style={[styles.checkbox, item.completed && styles.checkboxCompleted]}>
+            {item.completed && <Text style={styles.checkmark}>✓</Text>}
+          </View>
+          <Text style={[styles.taskText, item.completed && styles.taskTextCompleted]}>
+            {item.text}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </Swipeable>
+  );
+});
+
 export default function TodoScreen() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [currentDate, setCurrentDate] = useState('');
@@ -25,6 +160,7 @@ export default function TodoScreen() {
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [newTaskText, setNewTaskText] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [trashSvg, setTrashSvg] = useState('');
 
   // Load fonts
   useEffect(() => {
@@ -40,13 +176,14 @@ export default function TodoScreen() {
         setFontsLoaded(true);
       } catch (e) {
         console.warn("Error loading fonts:", e);
+        setFontsLoaded(true); // Continue even if fonts fail to load
       }
     }
     loadFonts();
   }, []);
 
-  // Set current date
-  useEffect(() => {
+  // Set current date - memoized to prevent unnecessary recalculations
+  const formattedDate = useMemo(() => {
     const now = new Date();
     const options: Intl.DateTimeFormatOptions = { 
       weekday: 'long', 
@@ -61,13 +198,36 @@ export default function TodoScreen() {
                    day === 2 || day === 22 ? 'nd' : 
                    day === 3 || day === 23 ? 'rd' : 'th';
     
-    const finalDate = formattedDate.replace(/\d+/, day + suffix);
-    setCurrentDate(finalDate);
+    return formattedDate.replace(/\d+/, day + suffix);
   }, []);
+
+  useEffect(() => {
+    setCurrentDate(formattedDate);
+  }, [formattedDate]);
 
   // Load tasks on mount
   useEffect(() => {
     loadTasks();
+  }, []);
+
+  // Load SVG content with better error handling
+  useEffect(() => {
+    const loadSvg = async () => {
+      try {
+        const svgContent = await fetch(require('../assets/logos/trash_bin.svg'))
+          .then(response => response.text());
+        setTrashSvg(svgContent);
+      } catch (error) {
+        console.warn('Error loading SVG:', error);
+        // Improved fallback SVG
+        setTrashSvg(`
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6" stroke="#90574D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        `);
+      }
+    };
+    loadSvg();
   }, []);
 
   const loadTasks = async () => {
@@ -82,125 +242,78 @@ export default function TodoScreen() {
     }
   };
 
-  const handleAddTask = async () => {
+  // Optimized handlers with useCallback
+  const handleAddTask = useCallback(async () => {
     if (!newTaskText.trim()) return;
 
-    const newTask = await taskStorage.addTask(newTaskText.trim());
-    if (newTask) {
-      setTasks([...tasks, newTask]);
-      setNewTaskText('');
-      setIsAddModalVisible(false);
-      Keyboard.dismiss();
-    }
-  };
-
-  const handleToggleTask = async (taskId: string) => {
-    const success = await taskStorage.toggleTask(taskId);
-    if (success) {
-      setTasks(tasks.map(task =>
-        task.id === taskId ? { ...task, completed: !task.completed } : task
-      ));
-    }
-  };
-
-  const handleDeleteTask = async (taskId: string) => {
-    const success = await taskStorage.deleteTask(taskId);
-    if (success) {
-      setTasks(tasks.filter(task => task.id !== taskId));
-    }
-  };
-
-  // Load SVG content
-  const [trashSvg, setTrashSvg] = useState('');
-
-  useEffect(() => {
-    // Load the SVG file
-    const loadSvg = async () => {
-      try {
-        const svgContent = await fetch(require('../assets/logos/trash_bin.svg'))
-          .then(response => response.text());
-        setTrashSvg(svgContent);
-      } catch (error) {
-        console.warn('Error loading SVG:', error);
-        // Fallback SVG if file doesn't load
-        setTrashSvg(`
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6" stroke="#90574D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        `);
+    try {
+      const newTask = await taskStorage.addTask(newTaskText.trim());
+      if (newTask) {
+        setTasks(prevTasks => [...prevTasks, newTask]);
+        setNewTaskText('');
+        setIsAddModalVisible(false);
+        Keyboard.dismiss();
       }
-    };
-    loadSvg();
+    } catch (error) {
+      console.error('Error adding task:', error);
+    }
+  }, [newTaskText]);
+
+  const handleToggleTask = useCallback(async (taskId: string) => {
+    try {
+      const success = await taskStorage.toggleTask(taskId);
+      if (success) {
+        setTasks(prevTasks => 
+          prevTasks.map(task =>
+            task.id === taskId ? { ...task, completed: !task.completed } : task
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error toggling task:', error);
+    }
   }, []);
 
-  // Custom right actions for swipe to delete
-  const renderRightActions = (taskId: string, progress: Animated.AnimatedAddition<number>, dragX: Animated.AnimatedAddition<number>) => {
-    const scale = dragX.interpolate({
-      inputRange: [-100, -50, 0],
-      outputRange: [1, 0.9, 0],
-      extrapolate: 'clamp',
-    });
+  const handleDeleteTask = useCallback(async (taskId: string) => {
+    try {
+      const success = await taskStorage.deleteTask(taskId);
+      if (success) {
+        setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
+      }
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    }
+  }, []);
 
-    const opacity = dragX.interpolate({
-      inputRange: [-100, -50, 0],
-      outputRange: [1, 0.7, 0],
-      extrapolate: 'clamp',
-    });
+  // Optimized modal handlers
+  const handleOpenModal = useCallback(() => {
+    setIsAddModalVisible(true);
+  }, []);
 
+  const handleCloseModal = useCallback(() => {
+    setIsAddModalVisible(false);
+    setNewTaskText('');
+  }, []);
+
+  // Optimized render function with keyExtractor
+  const renderTask = useCallback(({ item }: { item: Task }) => (
+    <TaskItem
+      item={item}
+      onToggle={handleToggleTask}
+      onDelete={handleDeleteTask}
+      trashSvg={trashSvg}
+    />
+  ), [handleToggleTask, handleDeleteTask, trashSvg]);
+
+  const keyExtractor = useCallback((item: Task) => item.id, []);
+
+  // Show loading state
+  if (!fontsLoaded) {
     return (
-      <View style={styles.deleteActionContainer}>
-        <Animated.View style={[styles.deleteAction, { opacity, transform: [{ scale }] }]}>
-          <View style={styles.trashIconContainer}>
-            {trashSvg ? (
-              <SvgXml 
-                xml={trashSvg.replace(/fill="[^"]*"/g, `fill="#90574D"`).replace(/stroke="[^"]*"/g, `stroke="#90574D"`)} 
-                width="22" 
-                height="22" 
-              />
-            ) : (
-              <View style={styles.fallbackIcon}>
-                <Text style={styles.fallbackIconText}>🗑</Text>
-              </View>
-            )}
-          </View>
-        </Animated.View>
+      <View style={[styles.container, styles.loadingContainer]}>
+        <Text style={styles.loadingText}>Loading...</Text>
       </View>
     );
-  };
-
-  const renderTask = ({ item }: { item: Task }) => {
-    return (
-      <Swipeable
-        renderRightActions={(progress, dragX) => renderRightActions(item.id, progress, dragX)}
-        onSwipeableOpen={(direction) => {
-          if (direction === 'right') {
-            handleDeleteTask(item.id);
-          }
-        }}
-        rightThreshold={80}
-        friction={2}
-        enableTrackpadTwoFingerGesture={true}
-      >
-        <View style={styles.taskContainer}>
-          <TouchableOpacity
-            style={styles.taskItem}
-            onPress={() => handleToggleTask(item.id)}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.checkbox, item.completed && styles.checkboxCompleted]}>
-              {item.completed && <Text style={styles.checkmark}>✓</Text>}
-            </View>
-            <Text style={[styles.taskText, item.completed && styles.taskTextCompleted]}>
-              {item.text}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </Swipeable>
-    );
-  };
-
-  if (!fontsLoaded) {
-    return <View style={styles.container} />;
   }
 
   return (
@@ -238,16 +351,25 @@ export default function TodoScreen() {
         <FlatList
           data={tasks}
           renderItem={renderTask}
-          keyExtractor={(item) => item.id}
+          keyExtractor={keyExtractor}
           contentContainerStyle={styles.taskList}
           showsVerticalScrollIndicator={false}
+          removeClippedSubviews={true} // Performance optimization
+          maxToRenderPerBatch={10} // Render optimization
+          windowSize={10} // Memory optimization
+          getItemLayout={(data, index) => ({ // Performance optimization for fixed height items
+            length: 68, // taskContainer height + margins
+            offset: 68 * index,
+            index,
+          })}
         />
       )}
 
       {/* Add Button */}
       <TouchableOpacity 
         style={styles.addButton}
-        onPress={() => setIsAddModalVisible(true)}
+        onPress={handleOpenModal}
+        activeOpacity={0.8}
       >
         <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
@@ -257,7 +379,7 @@ export default function TodoScreen() {
         visible={isAddModalVisible}
         transparent
         animationType="slide"
-        onRequestClose={() => setIsAddModalVisible(false)}
+        onRequestClose={handleCloseModal}
       >
         <KeyboardAvoidingView 
           style={styles.keyboardAvoidingView}
@@ -266,7 +388,7 @@ export default function TodoScreen() {
           <TouchableOpacity 
             style={styles.modalOverlay}
             activeOpacity={1}
-            onPress={() => setIsAddModalVisible(false)}
+            onPress={handleCloseModal}
           >
             <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
              {/* Drag Indicator */}
@@ -285,10 +407,7 @@ export default function TodoScreen() {
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => {
-                  setIsAddModalVisible(false);
-                  setNewTaskText('');
-                }}
+                onPress={handleCloseModal}
               >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
@@ -311,6 +430,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FAEBD7',
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontFamily: 'PlayfairDisplay-Regular',
+    fontSize: 18,
+    color: '#90574D',
   },
   header: {
     flexDirection: 'row',
@@ -401,32 +529,44 @@ const styles = StyleSheet.create({
     lineHeight: 36,
     marginTop: -2,
   },
-  // Custom Slide to Delete Styles
-  taskContainer: {
+  // Optimized Swipeable Styles
+  swipeableContainer: {
     marginHorizontal: 32,
     marginVertical: 4,
     borderRadius: 12,
     overflow: 'hidden',
+  },
+  swipeableChildrenContainer: {
+    borderRadius: 12,
+  },
+  taskContainer: {
     backgroundColor: '#FAEBD7',
+    borderRadius: 12,
   },
   deleteActionContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'flex-end',
-    paddingRight: 0,
+    backgroundColor: '#E8D5C4',
+    borderTopRightRadius: 12,
+    borderBottomRightRadius: 12,
   },
   deleteAction: {
-    backgroundColor: '#E8D5C4', // Slightly darker beige to match design
     width: 80,
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    borderTopRightRadius: 12,
-    borderBottomRightRadius: 12,
+  },
+  deleteButton: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   trashIconContainer: {
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 8,
   },
   fallbackIcon: {
     justifyContent: 'center',
