@@ -42,14 +42,10 @@ export default function TimerDisplay({
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return {
-      minutes: mins.toString().padStart(2, '0'),
-      seconds: secs.toString().padStart(2, '0')
-    };
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   const strokeDashoffset = CIRCUMFERENCE - (progress * CIRCUMFERENCE);
-  const { minutes, seconds } = formatTime(timeLeft);
 
   const createCircularProgress = () => {
     return `
@@ -116,8 +112,7 @@ export default function TimerDisplay({
         {/* Time Display */}
         <View style={styles.timeContainer}>
           <View style={styles.timeDisplay}>
-            <Text style={[styles.minutesText, compact && styles.minutesTextCompact]}>{minutes}</Text>
-            <Text style={[styles.secondsText, compact && styles.secondsTextCompact]}>{seconds}</Text>
+            <Text style={[styles.minutesText, compact && styles.minutesTextCompact]}>{formatTime(timeLeft)}</Text>
           </View>
         </View>
       </View>
@@ -190,29 +185,16 @@ const styles = StyleSheet.create({
   },
   minutesText: {
     fontFamily: 'PlayfairDisplay-Bold',
-    fontSize: 64,
+    fontSize: 52,
     color: '#90574D',
     fontWeight: '700',
-    letterSpacing: -3,
-    lineHeight: 60,
-  },
-  secondsText: {
-    fontFamily: 'PlayfairDisplay-Regular',
-    fontSize: 24,
-    color: '#90574D',
-    fontWeight: '400',
-    letterSpacing: 1,
-    opacity: 0.6,
-    marginTop: -2,
+    letterSpacing: 4,
+    lineHeight: 56,
   },
   minutesTextCompact: {
-    fontSize: 42,
+    fontSize: 36,
     lineHeight: 40,
-    letterSpacing: -2,
-  },
-  secondsTextCompact: {
-    fontSize: 18,
-    marginTop: -1,
+    letterSpacing: 2,
   },
   controlsContainer: {
     flexDirection: 'row',
