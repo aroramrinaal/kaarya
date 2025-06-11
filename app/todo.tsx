@@ -17,6 +17,8 @@ import {
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
 import { SvgXml } from 'react-native-svg';
 import { Task, taskStorage } from '../utils/storage';
+import TimerDisplay from './components/TimerDisplay';
+import { useTimer } from './hooks/useTimer';
 
 
 const timerSvg = `
@@ -158,6 +160,10 @@ export default function TodoScreen() {
   const [newTaskText, setNewTaskText] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [trashSvg, setTrashSvg] = useState('');
+  
+  // Timer state
+  const [isTimerVisible, setIsTimerVisible] = useState(false);
+  const { timeLeft, isRunning, progress, start, pause, reset } = useTimer();
 
   // Load fonts
   useEffect(() => {
@@ -313,8 +319,7 @@ export default function TodoScreen() {
           <TouchableOpacity 
             style={styles.timerButton}
             onPress={() => {
-              // TODO: Add timer functionality
-              // console.log('Timer pressed');
+              setIsTimerVisible(true);
             }}
             activeOpacity={0.7}
           >
@@ -330,10 +335,23 @@ export default function TodoScreen() {
         <Text style={styles.dateText}>{currentDate}</Text>
       </View>
 
+      {/* Timer Display */}
+      <TimerDisplay
+        isVisible={isTimerVisible}
+        timeLeft={timeLeft}
+        isRunning={isRunning}
+        progress={progress}
+        onStart={start}
+        onPause={pause}
+        onReset={reset}
+        onClose={() => setIsTimerVisible(false)}
+        compact={true}
+      />
+
       {/* Main Content */}
       {!isLoading && tasks.length === 0 ? (
-        <View style={styles.mainContent}>
-          <Text style={styles.mainMessage}>
+        <View style={[styles.mainContent, isTimerVisible && styles.mainContentWithTimer]}>
+          <Text style={[styles.mainMessage, isTimerVisible && styles.mainMessageCompact]}>
             You don't have any tasks yet. Press + to create your first Kaarya.
           </Text>
         </View>
@@ -342,13 +360,17 @@ export default function TodoScreen() {
           data={tasks}
           renderItem={renderTask}
           keyExtractor={keyExtractor}
-          contentContainerStyle={styles.taskList}
+          contentContainerStyle={[
+            styles.taskList,
+            isTimerVisible && styles.taskListWithTimer
+          ]}
+          style={isTimerVisible ? styles.taskListScrollable : undefined}
           showsVerticalScrollIndicator={false}
-          removeClippedSubviews={true} // Performance optimization
-          maxToRenderPerBatch={10} // Render optimization
-          windowSize={10} // Memory optimization
-          getItemLayout={(data, index) => ({ // Performance optimization for fixed height items
-            length: 68, // taskContainer height + margins
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          windowSize={10}
+          getItemLayout={(data, index) => ({
+            length: 68,
             offset: 68 * index,
             index,
           })}
@@ -469,6 +491,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 48,
     marginTop: -80,
   },
+  mainContentWithTimer: {
+    marginTop: 0,
+    paddingHorizontal: 32,
+    flex: 0,
+    paddingBottom: 160,
+  },
   mainMessage: {
     fontFamily: 'PlayfairDisplay-Bold',
     fontSize: 34,
@@ -477,6 +505,10 @@ const styles = StyleSheet.create({
     lineHeight: 44,
     letterSpacing: -0.8,
     maxWidth: 320,
+  },
+  mainMessageCompact: {
+    fontSize: 24,
+    lineHeight: 32,
   },
   addButton: {
     position: 'absolute',
@@ -591,6 +623,14 @@ const styles = StyleSheet.create({
   taskList: {
     paddingTop: 16,
     paddingBottom: 120,
+  },
+  taskListWithTimer: {
+    paddingTop: 8,
+    paddingBottom: 160,
+  },
+  taskListScrollable: {
+    flexGrow: 0,
+    maxHeight: 300, // Limit height to ensure timer and tasks both fit
   },
   keyboardAvoidingView: {
     flex: 1,
