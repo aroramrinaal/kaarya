@@ -11,6 +11,7 @@ interface TimerState {
 export function useTimer() {
   const [timeLeft, setTimeLeft] = useState(POMODORO_DURATION);
   const [isRunning, setIsRunning] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   
   // Calculate progress (0 to 1, where 1 is complete)
@@ -21,6 +22,7 @@ export function useTimer() {
     setTimeLeft((prevTime) => {
       if (prevTime <= 1) {
         setIsRunning(false);
+        setIsCompleted(true);
         // Timer completed - could add notification/vibration here
         return 0;
       }
@@ -43,6 +45,7 @@ export function useTimer() {
   // Reset the timer
   const reset = useCallback(() => {
     setIsRunning(false);
+    setIsCompleted(false);
     setTimeLeft(POMODORO_DURATION);
   }, []);
 
@@ -77,6 +80,7 @@ export function useTimer() {
   return {
     timeLeft,
     isRunning,
+    isCompleted,
     progress,
     start,
     pause,

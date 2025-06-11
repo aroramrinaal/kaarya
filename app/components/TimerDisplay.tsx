@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
+  Animated,
   Dimensions,
   StyleSheet,
   Text,
@@ -12,6 +13,7 @@ interface TimerDisplayProps {
   isVisible: boolean;
   timeLeft: number;
   isRunning: boolean;
+  isCompleted: boolean;
   onStart: () => void;
   onPause: () => void;
   onReset: () => void;
@@ -27,6 +29,7 @@ export default function TimerDisplay({
   isVisible,
   timeLeft,
   isRunning,
+  isCompleted,
   onStart,
   onPause,
   onReset,
@@ -35,6 +38,10 @@ export default function TimerDisplay({
   compact = false,
   zenMode = false,
 }: TimerDisplayProps) {
+  // Animation values
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  
   // Adjust sizes based on compact mode and zen mode
   const TIMER_SIZE = zenMode ? Math.min(width * 0.8, 320) : 
                      compact ? Math.min(width * 0.4, 160) : 
@@ -42,6 +49,39 @@ export default function TimerDisplay({
   const STROKE_WIDTH = zenMode ? 10 : compact ? 6 : 8;
   const RADIUS = (TIMER_SIZE - STROKE_WIDTH) / 2;
   const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+
+  // Completion animation effect
+  useEffect(() => {
+    if (isCompleted) {
+      // Gentle pulse animation
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.05,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ]),
+        { iterations: 3 } // Pulse 3 times then stop
+      ).start();
+
+      // Fade in completion message
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      // Reset animations when not completed
+      pulseAnim.setValue(1);
+      fadeAnim.setValue(0);
+    }
+  }, [isCompleted, pulseAnim, fadeAnim]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -121,12 +161,38 @@ export default function TimerDisplay({
         </TouchableOpacity>
       )}
 
+      {/* Completion Message - Only in Zen Mode */}
+      {isCompleted && zenMode && (
+        <Animated.View 
+          style={[
+            styles.completionContainer,
+            { opacity: fadeAnim }
+          ]}
+        >
+          <Text style={[
+            styles.completionText,
+            styles.completionTextZen
+          ]}>
+            पूर्ण
+          </Text>
+          <Text style={[
+            styles.completionSubtext,
+            styles.completionSubtextZen
+          ]}>
+            Well done! Take a break.
+          </Text>
+        </Animated.View>
+      )}
+
       {/* Timer Circle */}
-      <View style={[
-        styles.timerContainer, 
-        compact && styles.timerContainerCompact,
-        zenMode && styles.timerContainerZen
-      ]}>
+      <Animated.View 
+        style={[
+          styles.timerContainer, 
+          compact && styles.timerContainerCompact,
+          zenMode && styles.timerContainerZen,
+          { transform: [{ scale: pulseAnim }] }
+        ]}
+      >
         <SvgXml xml={createCircularProgress()} width={TIMER_SIZE} height={TIMER_SIZE} />
         
         {/* Time Display */}
@@ -145,7 +211,7 @@ export default function TimerDisplay({
             ]}>{formatTime(timeLeft)}</Text>
           </View>
         </View>
-      </View>
+      </Animated.View>
 
       {/* Control Buttons */}
       <View style={[
@@ -345,5 +411,33 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#D4A574',
     fontWeight: '600',
+  },
+  // Completion Animation Styles
+  completionContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  completionText: {
+    fontFamily: 'PlayfairDisplay-Bold',
+    fontSize: 24,
+    color: '#90574D',
+    textAlign: 'center',
+    marginBottom: 8,
+    fontWeight: '700',
+  },
+  completionTextZen: {
+    color: '#D4A574',
+    fontSize: 28,
+  },
+  completionSubtext: {
+    fontFamily: 'PlayfairDisplay-Medium',
+    fontSize: 16,
+    color: '#90574D',
+    textAlign: 'center',
+    opacity: 0.8,
+  },
+  completionSubtextZen: {
+    color: '#D4A574',
+    opacity: 0.9,
   },
 }); 

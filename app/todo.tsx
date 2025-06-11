@@ -172,7 +172,7 @@ export default function TodoScreen() {
   // Timer state
   const [isTimerVisible, setIsTimerVisible] = useState(false);
   const [isZenMode, setIsZenMode] = useState(false);
-  const { timeLeft, isRunning, progress, start, pause, reset } = useTimer();
+  const { timeLeft, isRunning, isCompleted, progress, start, pause, reset } = useTimer();
 
   // Load fonts
   useEffect(() => {
@@ -342,6 +342,7 @@ export default function TodoScreen() {
             isVisible={true}
             timeLeft={timeLeft}
             isRunning={isRunning}
+            isCompleted={isCompleted}
             progress={progress}
             onStart={start}
             onPause={pause}
@@ -386,6 +387,7 @@ export default function TodoScreen() {
         isVisible={isTimerVisible}
         timeLeft={timeLeft}
         isRunning={isRunning}
+        isCompleted={isCompleted}
         progress={progress}
         onStart={start}
         onPause={pause}
