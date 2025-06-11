@@ -1,10 +1,10 @@
 import React from 'react';
 import {
-    Dimensions,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
@@ -42,10 +42,14 @@ export default function TimerDisplay({
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return {
+      minutes: mins.toString().padStart(2, '0'),
+      seconds: secs.toString().padStart(2, '0')
+    };
   };
 
   const strokeDashoffset = CIRCUMFERENCE - (progress * CIRCUMFERENCE);
+  const { minutes, seconds } = formatTime(timeLeft);
 
   const createCircularProgress = () => {
     return `
@@ -78,15 +82,15 @@ export default function TimerDisplay({
   };
 
   const pauseSvg = `
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <rect x="6" y="4" width="4" height="16" fill="#FAEBD7" rx="1"/>
-      <rect x="14" y="4" width="4" height="16" fill="#FAEBD7" rx="1"/>
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+      <rect x="5" y="3" width="5" height="18" fill="#FAEBD7" rx="1.5"/>
+      <rect x="14" y="3" width="5" height="18" fill="#FAEBD7" rx="1.5"/>
     </svg>
   `;
 
   const playSvg = `
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <path d="M8 5v14l11-7z" fill="#FAEBD7"/>
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+      <path d="M7 4v16l13-8z" fill="#FAEBD7"/>
     </svg>
   `;
 
@@ -111,8 +115,10 @@ export default function TimerDisplay({
         
         {/* Time Display */}
         <View style={styles.timeContainer}>
-          <Text style={[styles.timeText, compact && styles.timeTextCompact]}>{formatTime(timeLeft)}</Text>
-          <Text style={[styles.sessionText, compact && styles.sessionTextCompact]}>Focus Session</Text>
+          <View style={styles.timeDisplay}>
+            <Text style={[styles.minutesText, compact && styles.minutesTextCompact]}>{minutes}</Text>
+            <Text style={[styles.secondsText, compact && styles.secondsTextCompact]}>{seconds}</Text>
+          </View>
         </View>
       </View>
 
@@ -125,8 +131,8 @@ export default function TimerDisplay({
         >
           <SvgXml 
             xml={isRunning ? pauseSvg : playSvg} 
-            width={compact ? "18" : "24"} 
-            height={compact ? "18" : "24"} 
+            width={compact ? "22" : "28"} 
+            height={compact ? "22" : "28"} 
           />
           <Text style={[styles.primaryButtonText, compact && styles.buttonTextCompact]}>
             {isRunning ? 'Pause' : 'Start'}
@@ -178,25 +184,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  timeText: {
+  timeDisplay: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  minutesText: {
     fontFamily: 'PlayfairDisplay-Bold',
-    fontSize: 36,
+    fontSize: 64,
     color: '#90574D',
     fontWeight: '700',
-    letterSpacing: -1,
+    letterSpacing: -3,
+    lineHeight: 60,
   },
-  timeTextCompact: {
+  secondsText: {
+    fontFamily: 'PlayfairDisplay-Regular',
     fontSize: 24,
-  },
-  sessionText: {
-    fontFamily: 'PlayfairDisplay-Medium',
-    fontSize: 14,
     color: '#90574D',
-    opacity: 0.7,
-    marginTop: 4,
+    fontWeight: '400',
+    letterSpacing: 1,
+    opacity: 0.6,
+    marginTop: -2,
   },
-  sessionTextCompact: {
-    fontSize: 12,
+  minutesTextCompact: {
+    fontSize: 42,
+    lineHeight: 40,
+    letterSpacing: -2,
+  },
+  secondsTextCompact: {
+    fontSize: 18,
+    marginTop: -1,
   },
   controlsContainer: {
     flexDirection: 'row',
@@ -231,17 +247,17 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     fontFamily: 'PlayfairDisplay-Medium',
-    fontSize: 16,
+    fontSize: 18,
     color: '#FAEBD7',
     fontWeight: '600',
   },
   secondaryButtonText: {
     fontFamily: 'PlayfairDisplay-Medium',
-    fontSize: 16,
+    fontSize: 18,
     color: '#90574D',
     fontWeight: '600',
   },
   buttonTextCompact: {
-    fontSize: 14,
+    fontSize: 16,
   },
 }); 
