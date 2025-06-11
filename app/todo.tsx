@@ -18,7 +18,14 @@ import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler'
 import { SvgXml } from 'react-native-svg';
 import { Task, taskStorage } from '../utils/storage';
 
-// Memoized Task Item Component for better performance
+
+const timerSvg = `
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 13V9M21 6L19 4M10 2H14M12 21C7.58172 21 4 17.4183 4 13C4 8.58172 7.58172 5 12 5C16.4183 5 20 8.58172 20 13C20 17.4183 16.4183 21 12 21Z" stroke="#90574D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+`;
+
+
 const TaskItem = React.memo(({ 
   item, 
   onToggle, 
@@ -32,12 +39,10 @@ const TaskItem = React.memo(({
 }) => {
   const swipeableRef = useRef<Swipeable>(null);
 
-  // Optimized right actions with useCallback to prevent re-renders
   const renderRightActions = useCallback((
     progress: Animated.AnimatedAddition<number>, 
     dragX: Animated.AnimatedAddition<number>
   ) => {
-    // Fixed interpolation ranges to prevent task from sliding out completely
     const scale = dragX.interpolate({
       inputRange: [-80, -40, 0],
       outputRange: [1, 0.9, 0.8],
@@ -50,7 +55,6 @@ const TaskItem = React.memo(({
       extrapolate: 'clamp',
     });
 
-    // Remove translateX to prevent sliding issues
     return (
       <View style={styles.deleteActionContainer}>
         <Animated.View 
@@ -65,9 +69,7 @@ const TaskItem = React.memo(({
           <TouchableOpacity
             style={styles.deleteButton}
             onPress={() => {
-              // Close immediately and delete
               swipeableRef.current?.close();
-              // Small delay to allow close animation
               setTimeout(() => onDelete(item.id), 100);
             }}
             activeOpacity={0.7}
@@ -307,17 +309,20 @@ export default function TodoScreen() {
       
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.headerLeft} />
-        <Text style={styles.logoText}>कार्य</Text>
-        <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.menuButton}>
-            <View style={styles.menuDots}>
-              <View style={styles.dot} />
-              <View style={styles.dot} />
-              <View style={styles.dot} />
-            </View>
+        <View style={styles.headerLeft}>
+          <TouchableOpacity 
+            style={styles.timerButton}
+            onPress={() => {
+              // TODO: Add timer functionality
+              console.log('Timer pressed');
+            }}
+            activeOpacity={0.7}
+          >
+            <SvgXml xml={timerSvg} width="28" height="28" />
           </TouchableOpacity>
         </View>
+        <Text style={styles.logoText}>कार्य</Text>
+        <View style={styles.headerRight} />
       </View>
 
       {/* Date */}
@@ -435,37 +440,16 @@ const styles = StyleSheet.create({
   },
   headerLeft: {
     flex: 1,
+    alignItems: 'flex-start',
   },
   headerRight: {
     flex: 1,
-    alignItems: 'flex-end',
   },
   logoText: {
     fontFamily: 'PlayfairDisplay-Bold',
     fontSize: 40,
     color: '#90574D',
     fontWeight: '700',
-  },
-  menuButton: {
-    padding: 12,
-  },
-  menuDots: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 5,
-    backgroundColor: '#90574D',
-    marginVertical: 3,
-    opacity: 1,
-    shadowColor: '#90574D',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.25,
-    shadowRadius: 1.5,
-    elevation: 2,
   },
   dateContainer: {
     paddingHorizontal: 32,
@@ -680,5 +664,10 @@ const styles = StyleSheet.create({
     fontFamily: 'PlayfairDisplay-Medium',
     fontSize: 16,
     color: '#FAEBD7',
+  },
+  timerButton: {
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#FAEBD7',
   },
 });
