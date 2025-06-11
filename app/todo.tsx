@@ -478,10 +478,9 @@ const styles = StyleSheet.create({
     marginBottom: 60,
   },
   dateText: {
-    fontFamily: 'PlayfairDisplay-Bold',
-    fontSize: 16,
+    fontSize: 20,
     color: '#90574D',
-    fontStyle: 'italic',
+    fontWeight: '600',
     opacity: 0.75,
   },
   mainContent: {

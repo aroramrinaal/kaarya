@@ -184,10 +184,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   minutesText: {
-    fontFamily: 'PlayfairDisplay-Bold',
     fontSize: 52,
     color: '#90574D',
-    fontWeight: '700',
+    fontWeight: 'bold',
     letterSpacing: 4,
     lineHeight: 56,
   },
@@ -195,6 +194,7 @@ const styles = StyleSheet.create({
     fontSize: 36,
     lineHeight: 40,
     letterSpacing: 2,
+    fontWeight: 'bold',
   },
   controlsContainer: {
     flexDirection: 'row',
