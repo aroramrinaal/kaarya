@@ -314,7 +314,7 @@ export default function TodoScreen() {
             style={styles.timerButton}
             onPress={() => {
               // TODO: Add timer functionality
-              console.log('Timer pressed');
+              // console.log('Timer pressed');
             }}
             activeOpacity={0.7}
           >
