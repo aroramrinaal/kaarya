@@ -16,9 +16,9 @@ import {
 } from 'react-native';
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
 import { SvgXml } from 'react-native-svg';
+import { useTimer } from '../hooks/useTimer';
 import { Task, taskStorage } from '../utils/storage';
 import TimerDisplay from './components/TimerDisplay';
-import { useTimer } from './hooks/useTimer';
 
 
 const timerSvg = `
