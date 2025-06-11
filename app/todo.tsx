@@ -21,9 +21,9 @@ import { Task, taskStorage } from '../utils/storage';
 import TimerDisplay from './components/TimerDisplay';
 
 
-const timerSvg = `
+const getTimerSvg = (isActive: boolean) => `
 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M12 13V9M21 6L19 4M10 2H14M12 21C7.58172 21 4 17.4183 4 13C4 8.58172 7.58172 5 12 5C16.4183 5 20 8.58172 20 13C20 17.4183 16.4183 21 12 21Z" stroke="#90574D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M12 13V9M21 6L19 4M10 2H14M12 21C7.58172 21 4 17.4183 4 13C4 8.58172 7.58172 5 12 5C16.4183 5 20 8.58172 20 13C20 17.4183 16.4183 21 12 21Z" stroke="${isActive ? '#FAEBD7' : '#90574D'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 `;
 
@@ -317,13 +317,13 @@ export default function TodoScreen() {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <TouchableOpacity 
-            style={styles.timerButton}
+            style={[styles.timerButton, isTimerVisible && styles.timerButtonActive]}
             onPress={() => {
-              setIsTimerVisible(true);
+              setIsTimerVisible(!isTimerVisible);
             }}
             activeOpacity={0.7}
           >
-            <SvgXml xml={timerSvg} width="28" height="28" />
+            <SvgXml xml={getTimerSvg(isTimerVisible)} width="28" height="28" />
           </TouchableOpacity>
         </View>
         <Text style={styles.logoText}>कार्य</Text>
@@ -709,5 +709,8 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 12,
     backgroundColor: '#FAEBD7',
+  },
+  timerButtonActive: {
+    backgroundColor: '#90574D',
   },
 });
