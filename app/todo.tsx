@@ -337,6 +337,7 @@ export default function TodoScreen() {
       >
         <StatusBar barStyle="light-content" backgroundColor="#2A1810" />
         <View style={styles.zenContent}>
+          <Text style={styles.zenHintText}>Tap anywhere to exit zen mode</Text>
           <TimerDisplay
             isVisible={true}
             timeLeft={timeLeft}
@@ -807,5 +808,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#90574D',
     fontWeight: '500',
+  },
+  zenHintText: {
+    fontFamily: 'PlayfairDisplay-Medium',
+    fontSize: 16,
+    color: '#D4A574',
+    textAlign: 'center',
+    marginBottom: 40,
+    opacity: 0.8,
+    letterSpacing: 0.5,
   },
 });
