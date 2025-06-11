@@ -18,6 +18,7 @@ interface TimerDisplayProps {
   onClose: () => void;
   progress: number; // 0 to 1
   compact?: boolean; // New prop for compact mode
+  zenMode?: boolean; // New prop for zen mode
 }
 
 const { width } = Dimensions.get('window');
@@ -32,10 +33,13 @@ export default function TimerDisplay({
   onClose,
   progress,
   compact = false,
+  zenMode = false,
 }: TimerDisplayProps) {
-  // Adjust sizes based on compact mode
-  const TIMER_SIZE = compact ? Math.min(width * 0.4, 160) : Math.min(width * 0.6, 240);
-  const STROKE_WIDTH = compact ? 6 : 8;
+  // Adjust sizes based on compact mode and zen mode
+  const TIMER_SIZE = zenMode ? Math.min(width * 0.8, 320) : 
+                     compact ? Math.min(width * 0.4, 160) : 
+                     Math.min(width * 0.6, 240);
+  const STROKE_WIDTH = zenMode ? 10 : compact ? 6 : 8;
   const RADIUS = (TIMER_SIZE - STROKE_WIDTH) / 2;
   const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
@@ -48,6 +52,9 @@ export default function TimerDisplay({
   const strokeDashoffset = CIRCUMFERENCE - (progress * CIRCUMFERENCE);
 
   const createCircularProgress = () => {
+    const strokeColor = zenMode ? '#D4A574' : '#90574D'; // Lighter brown for zen mode
+    const backgroundOpacity = zenMode ? '0.15' : '0.2';
+    
     return `
       <svg width="${TIMER_SIZE}" height="${TIMER_SIZE}" viewBox="0 0 ${TIMER_SIZE} ${TIMER_SIZE}">
         <!-- Background circle -->
@@ -55,17 +62,17 @@ export default function TimerDisplay({
           cx="${TIMER_SIZE / 2}"
           cy="${TIMER_SIZE / 2}"
           r="${RADIUS}"
-          stroke="#90574D"
+          stroke="${strokeColor}"
           stroke-width="${STROKE_WIDTH}"
           fill="none"
-          opacity="0.2"
+          opacity="${backgroundOpacity}"
         />
         <!-- Progress circle -->
         <circle
           cx="${TIMER_SIZE / 2}"
           cy="${TIMER_SIZE / 2}"
           r="${RADIUS}"
-          stroke="#90574D"
+          stroke="${strokeColor}"
           stroke-width="${STROKE_WIDTH}"
           fill="none"
           stroke-linecap="round"
@@ -77,50 +84,81 @@ export default function TimerDisplay({
     `;
   };
 
+  const iconFillColor = zenMode ? '#2A1810' : '#FAEBD7';
+  const iconStrokeColor = zenMode ? '#D4A574' : '#90574D';
+
   const pauseSvg = `
     <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-      <rect x="5" y="3" width="5" height="18" fill="#FAEBD7" rx="1.5"/>
-      <rect x="14" y="3" width="5" height="18" fill="#FAEBD7" rx="1.5"/>
+      <rect x="5" y="3" width="5" height="18" fill="${iconFillColor}" rx="1.5"/>
+      <rect x="14" y="3" width="5" height="18" fill="${iconFillColor}" rx="1.5"/>
     </svg>
   `;
 
   const playSvg = `
     <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-      <path d="M7 4v16l13-8z" fill="#FAEBD7"/>
+      <path d="M7 4v16l13-8z" fill="${iconFillColor}"/>
     </svg>
   `;
 
   const closeSvg = `
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <path d="M18 6L6 18M6 6l12 12" stroke="#90574D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M18 6L6 18M6 6l12 12" stroke="${iconStrokeColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   `;
 
   if (!isVisible) return null;
 
   return (
-    <View style={[styles.container, compact && styles.containerCompact]}>
-      {/* Close button */}
-      <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
-        <SvgXml xml={closeSvg} width="20" height="20" />
-      </TouchableOpacity>
+    <View style={[
+      styles.container, 
+      compact && styles.containerCompact,
+      zenMode && styles.containerZen
+    ]}>
+      {/* Close button - hidden in zen mode compact view */}
+      {!zenMode && (
+        <TouchableOpacity style={styles.closeButton} onPress={onClose} activeOpacity={0.7}>
+          <SvgXml xml={closeSvg} width="20" height="20" />
+        </TouchableOpacity>
+      )}
 
       {/* Timer Circle */}
-      <View style={[styles.timerContainer, compact && styles.timerContainerCompact]}>
+      <View style={[
+        styles.timerContainer, 
+        compact && styles.timerContainerCompact,
+        zenMode && styles.timerContainerZen
+      ]}>
         <SvgXml xml={createCircularProgress()} width={TIMER_SIZE} height={TIMER_SIZE} />
         
         {/* Time Display */}
-        <View style={styles.timeContainer}>
-          <View style={styles.timeDisplay}>
-            <Text style={[styles.minutesText, compact && styles.minutesTextCompact]}>{formatTime(timeLeft)}</Text>
+        <View style={[
+          styles.timeContainer,
+          zenMode && styles.timeContainerZen
+        ]}>
+          <View style={[
+            styles.timeDisplay,
+            zenMode && styles.timeDisplayZen
+          ]}>
+            <Text style={[
+              styles.minutesText, 
+              compact && styles.minutesTextCompact,
+              zenMode && styles.minutesTextZen
+            ]}>{formatTime(timeLeft)}</Text>
           </View>
         </View>
       </View>
 
       {/* Control Buttons */}
-      <View style={[styles.controlsContainer, compact && styles.controlsContainerCompact]}>
+      <View style={[
+        styles.controlsContainer, 
+        compact && styles.controlsContainerCompact,
+        zenMode && styles.controlsContainerZen
+      ]}>
         <TouchableOpacity
-          style={[styles.controlButton, styles.primaryButton, compact && styles.controlButtonCompact]}
+          style={[
+            styles.controlButton, 
+            zenMode ? styles.primaryButtonZen : styles.primaryButton, 
+            compact && styles.controlButtonCompact
+          ]}
           onPress={isRunning ? onPause : onStart}
           activeOpacity={0.8}
         >
@@ -129,17 +167,27 @@ export default function TimerDisplay({
             width={compact ? "22" : "28"} 
             height={compact ? "22" : "28"} 
           />
-          <Text style={[styles.primaryButtonText, compact && styles.buttonTextCompact]}>
+          <Text style={[
+            zenMode ? styles.primaryButtonTextZen : styles.primaryButtonText, 
+            compact && styles.buttonTextCompact
+          ]}>
             {isRunning ? 'Pause' : 'Start'}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.controlButton, styles.secondaryButton, compact && styles.controlButtonCompact]}
+          style={[
+            styles.controlButton, 
+            zenMode ? styles.secondaryButtonZen : styles.secondaryButton, 
+            compact && styles.controlButtonCompact
+          ]}
           onPress={onReset}
           activeOpacity={0.7}
         >
-          <Text style={[styles.secondaryButtonText, compact && styles.buttonTextCompact]}>Reset</Text>
+          <Text style={[
+            zenMode ? styles.secondaryButtonTextZen : styles.secondaryButtonText, 
+            compact && styles.buttonTextCompact
+          ]}>Reset</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -241,5 +289,61 @@ const styles = StyleSheet.create({
   },
   buttonTextCompact: {
     fontSize: 16,
+  },
+  // Zen Mode Styles
+  containerZen: {
+    backgroundColor: 'transparent',
+    paddingVertical: 60,
+  },
+  timerContainerZen: {
+    marginBottom: 60,
+  },
+  timeContainerZen: {
+    width: 280, // Fixed width to prevent text movement
+    height: 100, // Adequate height for larger text
+  },
+  timeDisplayZen: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  minutesTextZen: {
+    color: '#D4A574',
+    fontSize: 56, // Slightly smaller to fit better
+    fontWeight: 'bold',
+    letterSpacing: 4,
+    lineHeight: 64,
+    textAlign: 'center',
+    width: '100%', // Take full width of container
+    includeFontPadding: false, // Remove extra padding on Android
+  },
+  controlsContainerZen: {
+    gap: 20,
+    maxWidth: 360,
+  },
+  primaryButtonZen: {
+    backgroundColor: '#D4A574',
+    shadowColor: '#D4A574',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  primaryButtonTextZen: {
+    fontFamily: 'PlayfairDisplay-Medium',
+    fontSize: 18,
+    color: '#2A1810',
+    fontWeight: '600',
+  },
+  secondaryButtonZen: {
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: '#D4A574',
+  },
+  secondaryButtonTextZen: {
+    fontFamily: 'PlayfairDisplay-Medium',
+    fontSize: 18,
+    color: '#D4A574',
+    fontWeight: '600',
   },
 }); 

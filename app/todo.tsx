@@ -27,6 +27,14 @@ const getTimerSvg = (isActive: boolean) => `
 </svg>
 `;
 
+const getZenSvg = () => `
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="12" cy="12" r="10" stroke="#90574D" stroke-width="1.5" fill="none"/>
+<circle cx="12" cy="12" r="6" stroke="#90574D" stroke-width="1" fill="none"/>
+<circle cx="12" cy="12" r="2" fill="#90574D"/>
+</svg>
+`;
+
 
 const TaskItem = React.memo(({ 
   item, 
@@ -163,6 +171,7 @@ export default function TodoScreen() {
   
   // Timer state
   const [isTimerVisible, setIsTimerVisible] = useState(false);
+  const [isZenMode, setIsZenMode] = useState(false);
   const { timeLeft, isRunning, progress, start, pause, reset } = useTimer();
 
   // Load fonts
@@ -288,6 +297,15 @@ export default function TodoScreen() {
     setNewTaskText('');
   }, []);
 
+  // Zen mode handlers
+  const handleEnterZenMode = useCallback(() => {
+    setIsZenMode(true);
+  }, []);
+
+  const handleExitZenMode = useCallback(() => {
+    setIsZenMode(false);
+  }, []);
+
   // Optimized render function with keyExtractor
   const renderTask = useCallback(({ item }: { item: Task }) => (
     <TaskItem
@@ -306,6 +324,33 @@ export default function TodoScreen() {
       <View style={[styles.container, styles.loadingContainer]}>
         <Text style={styles.loadingText}>Loading...</Text>
       </View>
+    );
+  }
+
+  // Zen Mode Render
+  if (isZenMode) {
+    return (
+      <TouchableOpacity 
+        style={styles.zenContainer}
+        activeOpacity={1}
+        onPress={handleExitZenMode}
+      >
+        <StatusBar barStyle="light-content" backgroundColor="#2A1810" />
+        <View style={styles.zenContent}>
+          <TimerDisplay
+            isVisible={true}
+            timeLeft={timeLeft}
+            isRunning={isRunning}
+            progress={progress}
+            onStart={start}
+            onPause={pause}
+            onReset={reset}
+            onClose={handleExitZenMode}
+            compact={false}
+            zenMode={true}
+          />
+        </View>
+      </TouchableOpacity>
     );
   }
 
@@ -346,7 +391,22 @@ export default function TodoScreen() {
         onReset={reset}
         onClose={() => setIsTimerVisible(false)}
         compact={true}
+        zenMode={false}
       />
+
+      {/* Zen Mode Button */}
+      {isTimerVisible && (
+        <View style={styles.zenButtonContainer}>
+          <TouchableOpacity
+            style={styles.zenButton}
+            onPress={handleEnterZenMode}
+            activeOpacity={0.7}
+          >
+            <SvgXml xml={getZenSvg()} width="20" height="20" />
+            <Text style={styles.zenButtonText}>Zen Mode</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* Main Content */}
       {!isLoading && tasks.length === 0 ? (
@@ -711,5 +771,41 @@ const styles = StyleSheet.create({
   },
   timerButtonActive: {
     backgroundColor: '#90574D',
+  },
+  // Zen Mode Styles
+  zenContainer: {
+    flex: 1,
+    backgroundColor: '#2A1810', // Dark brown background
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  zenContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  zenButtonContainer: {
+    alignItems: 'center',
+    paddingHorizontal: 32,
+    paddingBottom: 20,
+  },
+  zenButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: '#90574D',
+    borderRadius: 20,
+    gap: 8,
+  },
+  zenButtonText: {
+    fontFamily: 'PlayfairDisplay-Medium',
+    fontSize: 16,
+    color: '#90574D',
+    fontWeight: '500',
   },
 });
