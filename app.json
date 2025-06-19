@@ -53,6 +53,9 @@
       "eas": {
         "projectId": "a5ebd937-b801-4bc9-a2bc-8c186bc8a873"
       }
+    },
+    "android": {
+      "package": "com.aroramrinaal.kaarya"
     }
   }
 }
