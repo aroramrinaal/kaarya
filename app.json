@@ -28,7 +28,8 @@
         },
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.aroramrinaal.kaarya"
     },
     "web": {
       "bundler": "metro",
@@ -40,9 +41,9 @@
       [
         "expo-splash-screen",
         {
-          "image": {
-            "light": "./assets/icons/kaarya-v1-icon.png",
-            "dark": "./assets/icons/kaarya-v1-icon-dark.png"
+          "image": "./assets/icons/kaarya-v1-icon.png",
+          "dark": {
+            "image": "./assets/icons/kaarya-v1-icon-dark.png"
           },
           "imageWidth": 200,
           "resizeMode": "contain",
