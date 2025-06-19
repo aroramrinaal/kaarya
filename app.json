@@ -49,7 +49,14 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-build-properties",
+      {
+        "ios": {
+          "useFrameworks": "static",
+          "modular_headers": true
+        }
+      }
     ],
     "experiments": {
       "typedRoutes": true
