@@ -4,7 +4,7 @@
     "slug": "kaarya",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icons/kaarya-1024.png",
+    "icon": "./assets/icons/kaarya-icon.png",
     "scheme": "kaarya",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,10 +14,7 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
-      "icon": {
-        "light": "./assets/icons/kaarya-1024.png",
-        "dark": "./assets/icons/kaarya-dark-1024.png"
-      },
+      "icon": "./assets/icons/kaarya-icon.png",
       "requireFullScreen": true
     },
     "web": {
@@ -30,10 +27,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/icons/kaarya-1024.png",
-          "dark": {
-            "image": "./assets/icons/kaarya-dark-1024.png"
-          },
+          "image": "./assets/icons/kaarya-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
@@ -59,9 +53,6 @@
       "eas": {
         "projectId": "a5ebd937-b801-4bc9-a2bc-8c186bc8a873"
       }
-    },
-    "android": {
-      "package": "com.aroramrinaal.kaarya"
     }
   }
 }
