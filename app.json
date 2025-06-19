@@ -4,7 +4,7 @@
     "slug": "kaarya",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icons/kaarya-icon.png",
+    "icon": "./assets/icons/kaarya-icon-noalpha.png",
     "scheme": "kaarya",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,7 +14,7 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
-      "icon": "./assets/icons/kaarya-icon.png",
+      "icon": "./assets/icons/kaarya-icon-noalpha.png",
       "requireFullScreen": true
     },
     "web": {
@@ -27,7 +27,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/icons/kaarya-icon.png",
+          "image": "./assets/icons/kaarya-icon-noalpha.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
