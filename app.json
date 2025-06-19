@@ -50,13 +50,16 @@
         }
       ],
       "expo-font",
-      "expo-build-properties",
-      {
-        "ios": {
-          "useFrameworks": "static",
-          "modular_headers": true
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static",
+            "modular_headers": true,
+            "deploymentTarget": "15.0"
+          }
         }
-      }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
