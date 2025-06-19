@@ -14,12 +14,18 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
-      "icon": "./assets/icons/kaarya-v1-icon.png",
+      "icon": {
+        "light": "./assets/icons/kaarya-v1-icon.png",
+        "dark": "./assets/icons/kaarya-v1-icon-dark.png"
+      },
       "requireFullScreen": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icons/kaarya-v1-icon.png",
+        "foregroundImage": {
+          "light": "./assets/icons/kaarya-v1-icon.png",
+          "dark": "./assets/icons/kaarya-v1-icon-dark.png"
+        },
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true
@@ -34,7 +40,10 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/icons/kaarya-v1-icon.png",
+          "image": {
+            "light": "./assets/icons/kaarya-v1-icon.png",
+            "dark": "./assets/icons/kaarya-v1-icon-dark.png"
+          },
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
