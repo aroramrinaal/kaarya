@@ -20,17 +20,6 @@
       },
       "requireFullScreen": true
     },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": {
-          "light": "./assets/icons/kaarya-v1-icon.png",
-          "dark": "./assets/icons/kaarya-v1-icon-dark.png"
-        },
-        "backgroundColor": "#ffffff"
-      },
-      "edgeToEdgeEnabled": true,
-      "package": "com.aroramrinaal.kaarya"
-    },
     "web": {
       "bundler": "metro",
       "output": "static",
