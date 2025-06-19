@@ -30,7 +30,7 @@
           "image": "./assets/icons/kaarya-icon-noalpha.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#FAEBD7"
         }
       ],
       "expo-font",
