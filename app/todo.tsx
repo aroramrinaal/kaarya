@@ -337,7 +337,7 @@ export default function TodoScreen() {
       >
         <StatusBar barStyle="light-content" backgroundColor="#2A1810" />
         <View style={styles.zenContent}>
-          <Text style={styles.zenHintText}>Tap anywhere to exit zen mode</Text>
+          <Text style={styles.zenHintText}>Tap anywhere to exit zen mode.</Text>
           <TimerDisplay
             isVisible={true}
             timeLeft={timeLeft}
