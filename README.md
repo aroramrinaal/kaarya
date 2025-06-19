@@ -10,6 +10,11 @@ Background #FAEBD7 and text #90574D
 eas build --profile development --platform ios 
 ```
 
+### clean build
+```bash
+npx expo prebuild --clean
+```
+
 ### actual prod build for testflight
 ```bash
 eas build --platform ios
