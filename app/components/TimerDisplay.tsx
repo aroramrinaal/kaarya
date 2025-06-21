@@ -1,11 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import {
-  Animated,
-  Dimensions,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    Animated,
+    Dimensions,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 
@@ -21,6 +21,12 @@ interface TimerDisplayProps {
   progress: number; // 0 to 1
   compact?: boolean; // New prop for compact mode
   zenMode?: boolean; // New prop for zen mode
+  theme?: {
+    background: string;
+    text: string;
+    cardBackground: string;
+    border: string;
+  };
 }
 
 const { width } = Dimensions.get('window');
@@ -37,6 +43,7 @@ export default function TimerDisplay({
   progress,
   compact = false,
   zenMode = false,
+  theme,
 }: TimerDisplayProps) {
   // Animation values
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -92,7 +99,7 @@ export default function TimerDisplay({
   const strokeDashoffset = CIRCUMFERENCE - (progress * CIRCUMFERENCE);
 
   const createCircularProgress = () => {
-    const strokeColor = zenMode ? '#D4A574' : '#90574D'; // Lighter brown for zen mode
+    const strokeColor = zenMode ? '#D4A574' : (theme?.border || '#90574D');
     const backgroundOpacity = zenMode ? '0.15' : '0.2';
     
     return `
@@ -124,8 +131,8 @@ export default function TimerDisplay({
     `;
   };
 
-  const iconFillColor = zenMode ? '#2A1810' : '#FAEBD7';
-  const iconStrokeColor = zenMode ? '#D4A574' : '#90574D';
+  const iconFillColor = zenMode ? '#2A1810' : (theme?.background || '#FAEBD7');
+  const iconStrokeColor = zenMode ? '#D4A574' : (theme?.border || '#90574D');
 
   const pauseSvg = `
     <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
@@ -152,7 +159,8 @@ export default function TimerDisplay({
     <View style={[
       styles.container, 
       compact && styles.containerCompact,
-      zenMode && styles.containerZen
+      zenMode && styles.containerZen,
+      !zenMode && theme && { backgroundColor: theme.background }
     ]}>
       {/* Close button - hidden in zen mode compact view */}
       {!zenMode && (
@@ -207,7 +215,8 @@ export default function TimerDisplay({
             <Text style={[
               styles.minutesText, 
               compact && styles.minutesTextCompact,
-              zenMode && styles.minutesTextZen
+              zenMode && styles.minutesTextZen,
+              !zenMode && theme && { color: theme.text }
             ]}>{formatTime(timeLeft)}</Text>
           </View>
         </View>
@@ -223,7 +232,8 @@ export default function TimerDisplay({
           style={[
             styles.controlButton, 
             zenMode ? styles.primaryButtonZen : styles.primaryButton, 
-            compact && styles.controlButtonCompact
+            compact && styles.controlButtonCompact,
+            !zenMode && theme && { backgroundColor: theme.border }
           ]}
           onPress={isRunning ? onPause : onStart}
           activeOpacity={0.8}
@@ -235,7 +245,8 @@ export default function TimerDisplay({
           />
           <Text style={[
             zenMode ? styles.primaryButtonTextZen : styles.primaryButtonText, 
-            compact && styles.buttonTextCompact
+            compact && styles.buttonTextCompact,
+            !zenMode && theme && { color: theme.background }
           ]}>
             {isRunning ? 'Pause' : 'Start'}
           </Text>
@@ -245,14 +256,16 @@ export default function TimerDisplay({
           style={[
             styles.controlButton, 
             zenMode ? styles.secondaryButtonZen : styles.secondaryButton, 
-            compact && styles.controlButtonCompact
+            compact && styles.controlButtonCompact,
+            !zenMode && theme && { borderColor: theme.border }
           ]}
           onPress={onReset}
           activeOpacity={0.7}
         >
           <Text style={[
             zenMode ? styles.secondaryButtonTextZen : styles.secondaryButtonText, 
-            compact && styles.buttonTextCompact
+            compact && styles.buttonTextCompact,
+            !zenMode && theme && { color: theme.text }
           ]}>Reset</Text>
         </TouchableOpacity>
       </View>

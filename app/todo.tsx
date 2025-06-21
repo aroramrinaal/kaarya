@@ -1,18 +1,18 @@
 import * as Font from 'expo-font';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Animated,
-  FlatList,
-  Keyboard,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    Animated,
+    FlatList,
+    Keyboard,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
 import { SvgXml } from 'react-native-svg';
@@ -21,9 +21,9 @@ import { Task, taskStorage } from '../utils/storage';
 import TimerDisplay from './components/TimerDisplay';
 
 
-const getTimerSvg = (isActive: boolean) => `
+const getTimerSvg = (isActive: boolean, theme: typeof themes.light) => `
 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M12 13V9M21 6L19 4M10 2H14M12 21C7.58172 21 4 17.4183 4 13C4 8.58172 7.58172 5 12 5C16.4183 5 20 8.58172 20 13C20 17.4183 16.4183 21 12 21Z" stroke="${isActive ? '#FAEBD7' : '#90574D'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M12 13V9M21 6L19 4M10 2H14M12 21C7.58172 21 4 17.4183 4 13C4 8.58172 7.58172 5 12 5C16.4183 5 20 8.58172 20 13C20 17.4183 16.4183 21 12 21Z" stroke="${isActive ? theme.background : theme.border}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 `;
 
@@ -35,17 +35,49 @@ const getZenSvg = () => `
 </svg>
 `;
 
+const getThemeSvg = (isDark: boolean, theme: typeof themes.light) => `
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+${isDark ? 
+  `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="none" stroke="${theme.border}" stroke-width="2"/>` :
+  `<circle cx="12" cy="12" r="5" fill="none" stroke="${theme.border}" stroke-width="2"/>
+   <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="${theme.border}" stroke-width="2" stroke-linecap="round"/>`
+}
+</svg>
+`;
+
+// Theme configuration
+const themes = {
+  light: {
+    background: '#FAEBD7',
+    text: '#90574D',
+    cardBackground: '#FAEBD7',
+    border: '#90574D',
+    deleteBackground: '#E8D5C4',
+    statusBarStyle: 'dark-content' as const,
+  },
+  dark: {
+    background: '#1A1611',
+    text: '#F5E6D3',
+    cardBackground: '#2A241F',
+    border: '#D4A574',
+    deleteBackground: '#3A2F26',
+    statusBarStyle: 'light-content' as const,
+  },
+};
+
 
 const TaskItem = React.memo(({ 
   item, 
   onToggle, 
   onDelete, 
-  trashSvg 
+  trashSvg,
+  theme
 }: { 
   item: Task; 
   onToggle: (id: string) => void; 
   onDelete: (id: string) => void;
   trashSvg: string;
+  theme: typeof themes.light;
 }) => {
   const swipeableRef = useRef<Swipeable>(null);
 
@@ -66,7 +98,7 @@ const TaskItem = React.memo(({
     });
 
     return (
-      <View style={styles.deleteActionContainer}>
+      <View style={[styles.deleteActionContainer, { backgroundColor: theme.deleteBackground }]}>
         <Animated.View 
           style={[
             styles.deleteAction, 
@@ -87,13 +119,13 @@ const TaskItem = React.memo(({
             <View style={styles.trashIconContainer}>
               {trashSvg ? (
                 <SvgXml 
-                  xml={trashSvg.replace(/fill="[^"]*"/g, `fill="#90574D"`).replace(/stroke="[^"]*"/g, `stroke="#90574D"`)} 
+                  xml={trashSvg.replace(/fill="[^"]*"/g, `fill="${theme.text}"`).replace(/stroke="[^"]*"/g, `stroke="${theme.text}"`)} 
                   width="22" 
                   height="22" 
                 />
               ) : (
                 <View style={styles.fallbackIcon}>
-                  <Text style={styles.fallbackIconText}>🗑</Text>
+                  <Text style={[styles.fallbackIconText, { color: theme.text }]}>🗑</Text>
                 </View>
               )}
             </View>
@@ -142,16 +174,27 @@ const TaskItem = React.memo(({
       containerStyle={styles.swipeableContainer}
       childrenContainerStyle={styles.swipeableChildrenContainer}
     >
-      <View style={styles.taskContainer}>
+      <View style={[styles.taskContainer, { backgroundColor: theme.cardBackground }]}>
         <TouchableOpacity
-          style={styles.taskItem}
+          style={[styles.taskItem, { backgroundColor: theme.cardBackground }]}
           onPress={handleToggle}
           activeOpacity={0.7}
         >
-          <View style={[styles.checkbox, item.completed && styles.checkboxCompleted]}>
-            {item.completed && <Text style={styles.checkmark}>✓</Text>}
+          <View style={[
+            styles.checkbox, 
+            { borderColor: theme.border },
+            item.completed && { backgroundColor: theme.border, borderColor: theme.border }
+          ]}>
+            {item.completed && <Text style={[
+              styles.checkmark, 
+              { color: theme.background }
+            ]}>✓</Text>}
           </View>
-          <Text style={[styles.taskText, item.completed && styles.taskTextCompleted]}>
+          <Text style={[
+            styles.taskText, 
+            { color: theme.text },
+            item.completed && styles.taskTextCompleted
+          ]}>
             {item.text}
           </Text>
         </TouchableOpacity>
@@ -173,6 +216,10 @@ export default function TodoScreen() {
   const [isTimerVisible, setIsTimerVisible] = useState(false);
   const [isZenMode, setIsZenMode] = useState(false);
   const { timeLeft, isRunning, isCompleted, progress, start, pause, reset } = useTimer();
+  
+  // Theme state
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const currentTheme = themes[isDarkTheme ? 'dark' : 'light'];
 
   // Load fonts
   useEffect(() => {
@@ -306,6 +353,11 @@ export default function TodoScreen() {
     setIsZenMode(false);
   }, []);
 
+  // Theme handlers
+  const handleToggleTheme = useCallback(() => {
+    setIsDarkTheme(prev => !prev);
+  }, []);
+
   // Optimized render function with keyExtractor
   const renderTask = useCallback(({ item }: { item: Task }) => (
     <TaskItem
@@ -313,16 +365,21 @@ export default function TodoScreen() {
       onToggle={handleToggleTask}
       onDelete={handleDeleteTask}
       trashSvg={trashSvg}
+      theme={currentTheme}
     />
-  ), [handleToggleTask, handleDeleteTask, trashSvg]);
+  ), [handleToggleTask, handleDeleteTask, trashSvg, currentTheme]);
 
   const keyExtractor = useCallback((item: Task) => item.id, []);
 
   // Show loading state
   if (!fontsLoaded) {
     return (
-      <View style={[styles.container, styles.loadingContainer]}>
-        <Text style={styles.loadingText}>Loading...</Text>
+      <View style={[
+        styles.container, 
+        styles.loadingContainer, 
+        { backgroundColor: currentTheme.background }
+      ]}>
+        <Text style={[styles.loadingText, { color: currentTheme.text }]}>Loading...</Text>
       </View>
     );
   }
@@ -357,29 +414,41 @@ export default function TodoScreen() {
   }
 
   return (
-    <GestureHandlerRootView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FAEBD7" />
+    <GestureHandlerRootView style={[styles.container, { backgroundColor: currentTheme.background }]}>
+      <StatusBar barStyle={currentTheme.statusBarStyle} backgroundColor={currentTheme.background} />
       
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <TouchableOpacity 
-            style={[styles.timerButton, isTimerVisible && styles.timerButtonActive]}
+            style={[
+              styles.timerButton, 
+              { backgroundColor: currentTheme.background },
+              isTimerVisible && { backgroundColor: currentTheme.border }
+            ]}
             onPress={() => {
               setIsTimerVisible(!isTimerVisible);
             }}
             activeOpacity={0.7}
           >
-            <SvgXml xml={getTimerSvg(isTimerVisible)} width="28" height="28" />
+            <SvgXml xml={getTimerSvg(isTimerVisible, currentTheme)} width="28" height="28" />
           </TouchableOpacity>
         </View>
-        <Text style={styles.logoText}>कार्य</Text>
-        <View style={styles.headerRight} />
+        <Text style={[styles.logoText, { color: currentTheme.text }]}>कार्य</Text>
+        <View style={styles.headerRight}>
+          <TouchableOpacity
+            style={[styles.themeButton, { backgroundColor: currentTheme.background }]}
+            onPress={handleToggleTheme}
+            activeOpacity={0.7}
+          >
+            <SvgXml xml={getThemeSvg(isDarkTheme, currentTheme)} width="28" height="28" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Date */}
       <View style={styles.dateContainer}>
-        <Text style={styles.dateText}>{currentDate}</Text>
+        <Text style={[styles.dateText, { color: currentTheme.text }]}>{currentDate}</Text>
       </View>
 
       {/* Timer Display */}
@@ -395,18 +464,19 @@ export default function TodoScreen() {
         onClose={() => setIsTimerVisible(false)}
         compact={true}
         zenMode={false}
+        theme={currentTheme}
       />
 
       {/* Zen Mode Button */}
       {isTimerVisible && (
         <View style={styles.zenButtonContainer}>
           <TouchableOpacity
-            style={styles.zenButton}
+            style={[styles.zenButton, { borderColor: currentTheme.border }]}
             onPress={handleEnterZenMode}
             activeOpacity={0.7}
           >
             <SvgXml xml={getZenSvg()} width="20" height="20" />
-            <Text style={styles.zenButtonText}>Zen Mode</Text>
+            <Text style={[styles.zenButtonText, { color: currentTheme.text }]}>Zen Mode</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -414,7 +484,11 @@ export default function TodoScreen() {
       {/* Main Content */}
       {!isLoading && tasks.length === 0 ? (
         <View style={[styles.mainContent, isTimerVisible && styles.mainContentWithTimer]}>
-          <Text style={[styles.mainMessage, isTimerVisible && styles.mainMessageCompact]}>
+          <Text style={[
+            styles.mainMessage, 
+            isTimerVisible && styles.mainMessageCompact,
+            { color: currentTheme.text }
+          ]}>
             You don't have any tasks yet. Press + to create your first Kaarya.
           </Text>
         </View>
@@ -442,11 +516,20 @@ export default function TodoScreen() {
 
       {/* Add Button */}
       <TouchableOpacity 
-        style={styles.addButton}
+        style={[
+          styles.addButton, 
+          { 
+            backgroundColor: currentTheme.border,
+            shadowColor: currentTheme.border,
+          }
+        ]}
         onPress={handleOpenModal}
         activeOpacity={0.8}
       >
-        <Text style={styles.addButtonText}>+</Text>
+        <Text style={[
+          styles.addButtonText, 
+          { color: isDarkTheme ? currentTheme.background : '#FAEBD7' }
+        ]}>+</Text>
       </TouchableOpacity>
 
       {/* Add Task Modal */}
@@ -465,14 +548,21 @@ export default function TodoScreen() {
             activeOpacity={1}
             onPress={handleCloseModal}
           >
-            <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
+            <View style={[styles.modalContent, { backgroundColor: currentTheme.background }]} onStartShouldSetResponder={() => true}>
              {/* Drag Indicator */}
-             <View style={styles.dragIndicator} />
-             <Text style={styles.modalTitle}>Add New Task</Text>
+             <View style={[styles.dragIndicator, { backgroundColor: currentTheme.text }]} />
+             <Text style={[styles.modalTitle, { color: currentTheme.text }]}>Add New Task</Text>
             <TextInput
-              style={styles.taskInput}
+              style={[
+                styles.taskInput, 
+                { 
+                  borderColor: currentTheme.border,
+                  color: currentTheme.text,
+                  backgroundColor: currentTheme.cardBackground
+                }
+              ]}
               placeholder="What needs to be done?"
-              placeholderTextColor="#90574D66"
+              placeholderTextColor={`${currentTheme.text}66`}
               value={newTaskText}
               onChangeText={setNewTaskText}
               autoFocus
@@ -481,16 +571,27 @@ export default function TodoScreen() {
             />
             <View style={styles.modalButtons}>
               <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
+                style={[
+                  styles.modalButton, 
+                  styles.cancelButton,
+                  { borderColor: currentTheme.border }
+                ]}
                 onPress={handleCloseModal}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={[styles.cancelButtonText, { color: currentTheme.text }]}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalButton, styles.saveButton]}
+                style={[
+                  styles.modalButton, 
+                  styles.saveButton,
+                  { backgroundColor: currentTheme.border }
+                ]}
                 onPress={handleAddTask}
               >
-                <Text style={styles.saveButtonText}>Add Task</Text>
+                <Text style={[
+                  styles.saveButtonText, 
+                  { color: isDarkTheme ? currentTheme.background : '#FAEBD7' }
+                ]}>Add Task</Text>
               </TouchableOpacity>
             </View>
             </View>
@@ -529,6 +630,7 @@ const styles = StyleSheet.create({
   },
   headerRight: {
     flex: 1,
+    alignItems: 'flex-end',
   },
   logoText: {
     fontFamily: 'PlayfairDisplay-Bold',
@@ -583,7 +685,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 12,
-    shadowColor: '#90574D',
     shadowOffset: {
       width: 0,
       height: 6,
@@ -774,6 +875,11 @@ const styles = StyleSheet.create({
   },
   timerButtonActive: {
     backgroundColor: '#90574D',
+  },
+  themeButton: {
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#FAEBD7',
   },
   // Zen Mode Styles
   zenContainer: {
