@@ -78,8 +78,17 @@ export default function WelcomeScreen() {
     cycleWords();
   }, [currentWordIndex, fontsLoaded, isCheckingOnboarding]);
 
-  const handleNext = () => {
-    router.replace('/main');
+  const handleNext = async () => {
+    try {
+      // Mark onboarding as seen
+      await onboardingStorage.markOnboardingAsSeen();
+      // Go directly to todo page
+      router.replace('/todo');
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+      // Still navigate even if storage fails
+      router.replace('/todo');
+    }
   };
 
   if (isCheckingOnboarding || !fontsLoaded) {
