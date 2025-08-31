@@ -6,5 +6,3 @@ export type AppTheme = {
   deleteBackground: string;
   statusBarStyle: 'dark-content' | 'light-content';
 };
-
-

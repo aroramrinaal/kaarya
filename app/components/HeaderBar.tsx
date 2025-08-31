@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
-import type { AppTheme } from './types';
+import type { AppTheme } from '../../types';
 
 const getTimerSvg = (isActive: boolean, theme: AppTheme) => `
 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

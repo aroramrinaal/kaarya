@@ -2,8 +2,8 @@ import React, { useCallback, useRef } from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { SvgXml } from 'react-native-svg';
+import type { AppTheme } from '../../types';
 import type { Task } from '../../utils/storage';
-import type { AppTheme } from './types';
 
 type Props = {
   item: Task;

@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import type { AppTheme } from './types';
+import type { AppTheme } from '../../types';
 
 type Props = { theme: AppTheme };
 

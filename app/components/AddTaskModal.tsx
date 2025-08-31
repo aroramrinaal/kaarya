@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { Keyboard, KeyboardAvoidingView, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import type { AppTheme } from './types';
+import type { AppTheme } from '../../types';
 
 type Props = {
   visible: boolean;
