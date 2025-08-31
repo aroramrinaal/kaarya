@@ -8,6 +8,7 @@ import {
   View
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useAppFonts } from '../hooks/useAppFonts';
 import { useTimer } from '../hooks/useTimer';
 import { Task, taskStorage } from '../utils/storage';
 import AddTaskModal from './components/AddTaskModal';
@@ -23,6 +24,7 @@ import ZenMode from './components/ZenMode';
 
 
 export default function TodoScreen() {
+  const fontsLoaded = useAppFonts();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -128,7 +130,7 @@ export default function TodoScreen() {
   const keyExtractor = useCallback((item: Task) => item.id, []);
 
   // Show loading state
-  if (isLoading) {
+  if (!fontsLoaded || isLoading) {
     return (
       <View style={[
         styles.container, 
