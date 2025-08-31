@@ -1,4 +1,3 @@
-import * as Font from 'expo-font';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   FlatList,
@@ -24,7 +23,6 @@ import ZenMode from './components/ZenMode';
 
 
 export default function TodoScreen() {
-  const [fontsLoaded, setFontsLoaded] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,26 +36,6 @@ export default function TodoScreen() {
   // Theme state
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const currentTheme = themes[isDarkTheme ? 'dark' : 'light'];
-
-  // Load fonts
-  useEffect(() => {
-    async function loadFonts() {
-      try {
-        await Font.loadAsync({
-          'PlayfairDisplay-Regular': require('../assets/fonts/PlayfairDisplay-Regular.ttf'),
-          'PlayfairDisplay-Medium': require('../assets/fonts/PlayfairDisplay-Medium.ttf'),
-          'PlayfairDisplay-SemiBold': require('../assets/fonts/PlayfairDisplay-SemiBold.ttf'),
-          'PlayfairDisplay-Bold': require('../assets/fonts/PlayfairDisplay-Bold.ttf'),
-          'PlayfairDisplay-Black': require('../assets/fonts/PlayfairDisplay-Black.ttf'),
-        });
-        setFontsLoaded(true);
-      } catch (e) {
-        console.warn("Error loading fonts:", e);
-        setFontsLoaded(true); // Continue even if fonts fail to load
-      }
-    }
-    loadFonts();
-  }, []);
 
   // Load tasks on mount
   useEffect(() => {
@@ -150,7 +128,7 @@ export default function TodoScreen() {
   const keyExtractor = useCallback((item: Task) => item.id, []);
 
   // Show loading state
-  if (!fontsLoaded) {
+  if (isLoading) {
     return (
       <View style={[
         styles.container, 
