@@ -18,7 +18,6 @@ export default function RootLayout() {
         {/* Commented out for future authentication implementation */}
         {/* <Stack.Screen name="auth" options={{ headerShown: false }} /> */}
         {/* <Stack.Screen name="(authenticated)" options={{ headerShown: false }} /> */}
-        <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
     </>
