@@ -10,12 +10,12 @@ import {
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useAppFonts } from '../hooks/useAppFonts';
 import { useTimer } from '../hooks/useTimer';
+import { themes } from '../types';
 import { Task, taskStorage } from '../utils/storage';
 import AddTaskModal from './components/AddTaskModal';
 import DateHeader from './components/DateHeader';
 import HeaderBar from './components/HeaderBar';
 import TaskItem from './components/TaskItem';
-import { themes } from './components/theme';
 import TimerPanel from './components/TimerPanel';
 import ZenMode from './components/ZenMode';
 
