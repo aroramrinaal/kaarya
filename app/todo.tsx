@@ -12,6 +12,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useTimer } from '../hooks/useTimer';
 import { Task, taskStorage } from '../utils/storage';
 import AddTaskModal from './components/AddTaskModal';
+import DateHeader from './components/DateHeader';
 import HeaderBar from './components/HeaderBar';
 import TaskItem from './components/TaskItem';
 import { themes } from './components/theme';
@@ -192,6 +193,8 @@ export default function TodoScreen() {
         theme={currentTheme}
       />
 
+      <DateHeader theme={currentTheme} />
+
       {/* Timer Panel (compact timer + zen button) */}
       <TimerPanel
         isVisible={isTimerVisible}
@@ -293,24 +296,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#90574D',
   },
-  header: {
-    
-  },
-  headerLeft: {
-    
-  },
-  headerRight: {
-    
-  },
-  logoText: {
-    
-  },
-  dateContainer: {
-    
-  },
-  dateText: {
-    
-  },
+  header: undefined as any,
+  headerLeft: undefined as any,
+  headerRight: undefined as any,
+  logoText: undefined as any,
+  dateContainer: undefined as any,
+  dateText: undefined as any,
   mainContent: {
     flex: 1,
     justifyContent: 'center',
@@ -363,51 +354,21 @@ const styles = StyleSheet.create({
     marginTop: -2,
   },
   // Optimized Swipeable Styles
-  swipeableContainer: {
-    
-  },
-  swipeableChildrenContainer: {
-    
-  },
-  taskContainer: {
-    
-  },
-  deleteActionContainer: {
-    
-  },
-  deleteAction: {
-    
-  },
-  deleteButton: {
-    
-  },
-  trashIconContainer: {
-    
-  },
-  fallbackIcon: {
-    
-  },
-  fallbackIconText: {
-    
-  },
-  taskItem: {
-    
-  },
-  checkbox: {
-    
-  },
-  checkboxCompleted: {
-    
-  },
-  checkmark: {
-    
-  },
-  taskText: {
-    
-  },
-  taskTextCompleted: {
-    
-  },
+  swipeableContainer: undefined as any,
+  swipeableChildrenContainer: undefined as any,
+  taskContainer: undefined as any,
+  deleteActionContainer: undefined as any,
+  deleteAction: undefined as any,
+  deleteButton: undefined as any,
+  trashIconContainer: undefined as any,
+  fallbackIcon: undefined as any,
+  fallbackIconText: undefined as any,
+  taskItem: undefined as any,
+  checkbox: undefined as any,
+  checkboxCompleted: undefined as any,
+  checkmark: undefined as any,
+  taskText: undefined as any,
+  taskTextCompleted: undefined as any,
   taskList: {
     paddingTop: 16,
     paddingBottom: 120,
@@ -420,54 +381,17 @@ const styles = StyleSheet.create({
     flexGrow: 0,
     maxHeight: 300, // Limit height to ensure timer and tasks both fit
   },
-  keyboardAvoidingView: {
-    
-  },
-  modalOverlay: {
-    
-  },
-  modalContent: {
-    
-  },
-  dragIndicator: {
-    
-  },
-  modalTitle: {
-    
-  },
-  taskInput: {
-    
-  },
-  modalButtons: {
-    
-  },
-  modalButton: {
-    
-  },
-  cancelButton: {
-    
-  },
-  cancelButtonText: {
-    
-  },
-  saveButton: {
-    
-  },
-  saveButtonText: {
-    
-  },
-  timerButton: {
-    padding: 12,
-    borderRadius: 12,
-    backgroundColor: '#FAEBD7',
-  },
-  timerButtonActive: {
-    
-  },
-  themeButton: {
-    padding: 12,
-    borderRadius: 12,
-    backgroundColor: '#FAEBD7',
-  },
+  keyboardAvoidingView: undefined as any,
+  modalOverlay: undefined as any,
+  modalContent: undefined as any,
+  dragIndicator: undefined as any,
+  modalTitle: undefined as any,
+  taskInput: undefined as any,
+  modalButtons: undefined as any,
+  modalButton: undefined as any,
+  cancelButton: undefined as any,
+  cancelButtonText: undefined as any,
+  saveButton: undefined as any,
+  saveButtonText: undefined as any,
   // Zen Mode Styles moved to components/ZenMode
 });
