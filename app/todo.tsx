@@ -1,208 +1,31 @@
 import * as Font from 'expo-font';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
-  Animated,
   FlatList,
-  Keyboard,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
   StatusBar,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View
 } from 'react-native';
-import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
-import { SvgXml } from 'react-native-svg';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useTimer } from '../hooks/useTimer';
 import { Task, taskStorage } from '../utils/storage';
+import AddTaskModal from './components/AddTaskModal';
+import HeaderBar from './components/HeaderBar';
+import TaskItem from './components/TaskItem';
+import { themes } from './components/theme';
 import TimerPanel from './components/TimerPanel';
 import ZenMode from './components/ZenMode';
-import type { AppTheme } from './components/types';
 
 
-const getTimerSvg = (isActive: boolean, theme: AppTheme) => `
-<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M12 13V9M21 6L19 4M10 2H14M12 21C7.58172 21 4 17.4183 4 13C4 8.58172 7.58172 5 12 5C16.4183 5 20 8.58172 20 13C20 17.4183 16.4183 21 12 21Z" stroke="${isActive ? theme.background : theme.border}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-`;
+// Header icons and themes moved into components
 
-const getThemeSvg = (isDark: boolean, theme: AppTheme) => `
-<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-${isDark ? 
-  `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="none" stroke="${theme.border}" stroke-width="2"/>` :
-  `<circle cx="12" cy="12" r="5" fill="none" stroke="${theme.border}" stroke-width="2"/>
-   <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="${theme.border}" stroke-width="2" stroke-linecap="round"/>`
-}
-</svg>
-`;
-
-// Theme configuration
-const themes = {
-  light: {
-    background: '#FAEBD7',
-    text: '#90574D',
-    cardBackground: '#FAEBD7',
-    border: '#90574D',
-    deleteBackground: '#E8D5C4',
-    statusBarStyle: 'dark-content' as const,
-  },
-  dark: {
-    background: '#1A1611',
-    text: '#F5E6D3',
-    cardBackground: '#2A241F',
-    border: '#D4A574',
-    deleteBackground: '#3A2F26',
-    statusBarStyle: 'light-content' as const,
-  },
-};
-
-
-const TaskItem = React.memo(({ 
-  item, 
-  onToggle, 
-  onDelete, 
-  trashSvg,
-  theme
-}: { 
-  item: Task; 
-  onToggle: (id: string) => void; 
-  onDelete: (id: string) => void;
-  trashSvg: string;
-  theme: AppTheme;
-}) => {
-  const swipeableRef = useRef<Swipeable>(null);
-
-  const renderRightActions = useCallback((
-    progress: Animated.AnimatedAddition<number>, 
-    dragX: Animated.AnimatedAddition<number>
-  ) => {
-    const scale = dragX.interpolate({
-      inputRange: [-80, -40, 0],
-      outputRange: [1, 0.9, 0.8],
-      extrapolate: 'clamp',
-    });
-
-    const opacity = dragX.interpolate({
-      inputRange: [-80, -40, 0],
-      outputRange: [1, 0.8, 0],
-      extrapolate: 'clamp',
-    });
-
-    return (
-      <View style={[styles.deleteActionContainer, { backgroundColor: theme.deleteBackground }]}>
-        <Animated.View 
-          style={[
-            styles.deleteAction, 
-            { 
-              opacity, 
-              transform: [{ scale }] 
-            }
-          ]}
-        >
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={() => {
-              swipeableRef.current?.close();
-              setTimeout(() => onDelete(item.id), 100);
-            }}
-            activeOpacity={0.7}
-          >
-            <View style={styles.trashIconContainer}>
-              {trashSvg ? (
-                <SvgXml 
-                  xml={trashSvg.replace(/fill="[^"]*"/g, `fill="${theme.text}"`).replace(/stroke="[^"]*"/g, `stroke="${theme.text}"`)} 
-                  width="22" 
-                  height="22" 
-                />
-              ) : (
-                <View style={styles.fallbackIcon}>
-                  <Text style={[styles.fallbackIconText, { color: theme.text }]}>🗑</Text>
-                </View>
-              )}
-            </View>
-          </TouchableOpacity>
-        </Animated.View>
-      </View>
-    );
-  }, [item.id, onDelete, trashSvg]);
-
-  // Handle swipe open with improved logic
-  const handleSwipeOpen = useCallback((direction: 'left' | 'right') => {
-    if (direction === 'right') {
-      // Auto-close after a shorter delay for better UX
-      setTimeout(() => {
-        swipeableRef.current?.close();
-      }, 2000);
-    }
-  }, []);
-
-  // Handle swipe will open - prevents getting stuck
-  const handleSwipeWillOpen = useCallback((direction: 'left' | 'right') => {
-    // This helps prevent the swipe from getting stuck
-    if (direction === 'right') {
-      // Optional: Add haptic feedback here if needed
-    }
-  }, []);
-
-  const handleToggle = useCallback(() => {
-    onToggle(item.id);
-  }, [item.id, onToggle]);
-
-  return (
-    <Swipeable
-      ref={swipeableRef}
-      renderRightActions={renderRightActions}
-      onSwipeableOpen={handleSwipeOpen}
-      onSwipeableWillOpen={handleSwipeWillOpen}
-      rightThreshold={30} // Adjusted for better control
-      leftThreshold={1000} // High value to prevent left swipe
-      friction={2} // Increased friction for more control
-      overshootRight={false} // Prevent over-swiping
-      overshootLeft={false}
-      overshootFriction={8} // Helps with bounce-back feel
-      enableTrackpadTwoFingerGesture={true}
-      useNativeAnimations={true} // Use native animations for better performance
-      containerStyle={styles.swipeableContainer}
-      childrenContainerStyle={styles.swipeableChildrenContainer}
-    >
-      <View style={[styles.taskContainer, { backgroundColor: theme.cardBackground }]}>
-        <TouchableOpacity
-          style={[styles.taskItem, { backgroundColor: theme.cardBackground }]}
-          onPress={handleToggle}
-          activeOpacity={0.7}
-        >
-          <View style={[
-            styles.checkbox, 
-            { borderColor: theme.border },
-            item.completed && { backgroundColor: theme.border, borderColor: theme.border }
-          ]}>
-            {item.completed && <Text style={[
-              styles.checkmark, 
-              { color: theme.background }
-            ]}>✓</Text>}
-          </View>
-          <Text style={[
-            styles.taskText, 
-            { color: theme.text },
-            item.completed && styles.taskTextCompleted
-          ]}>
-            {item.text}
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </Swipeable>
-  );
-});
 
 export default function TodoScreen() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
-  const [currentDate, setCurrentDate] = useState('');
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
-  const [newTaskText, setNewTaskText] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [trashSvg, setTrashSvg] = useState('');
   
@@ -235,29 +58,6 @@ export default function TodoScreen() {
     loadFonts();
   }, []);
 
-  // Set current date - memoized to prevent unnecessary recalculations
-  const formattedDate = useMemo(() => {
-    const now = new Date();
-    const options: Intl.DateTimeFormatOptions = { 
-      weekday: 'long', 
-      day: 'numeric', 
-      month: 'long' 
-    };
-    const formattedDate = now.toLocaleDateString('en-US', options);
-    
-    // Add ordinal suffix to day
-    const day = now.getDate();
-    const suffix = day === 1 || day === 21 || day === 31 ? 'st' : 
-                   day === 2 || day === 22 ? 'nd' : 
-                   day === 3 || day === 23 ? 'rd' : 'th';
-    
-    return formattedDate.replace(/\d+/, day + suffix);
-  }, []);
-
-  useEffect(() => {
-    setCurrentDate(formattedDate);
-  }, [formattedDate]);
-
   // Load tasks on mount
   useEffect(() => {
     loadTasks();
@@ -286,22 +86,6 @@ export default function TodoScreen() {
   };
 
   // Optimized handlers with useCallback
-  const handleAddTask = useCallback(async () => {
-    if (!newTaskText.trim()) return;
-
-    try {
-      const newTask = await taskStorage.addTask(newTaskText.trim());
-      if (newTask) {
-        setTasks(prevTasks => [...prevTasks, newTask]);
-        setNewTaskText('');
-        setIsAddModalVisible(false);
-        Keyboard.dismiss();
-      }
-    } catch (error) {
-      console.error('Error adding task:', error);
-    }
-  }, [newTaskText]);
-
   const handleToggleTask = useCallback(async (taskId: string) => {
     try {
       const success = await taskStorage.toggleTask(taskId);
@@ -335,7 +119,6 @@ export default function TodoScreen() {
 
   const handleCloseModal = useCallback(() => {
     setIsAddModalVisible(false);
-    setNewTaskText('');
   }, []);
 
   // Zen mode handlers
@@ -399,39 +182,15 @@ export default function TodoScreen() {
     <GestureHandlerRootView style={[styles.container, { backgroundColor: currentTheme.background }]}>
       <StatusBar barStyle={currentTheme.statusBarStyle} backgroundColor={currentTheme.background} />
       
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity 
-            style={[
-              styles.timerButton, 
-              { backgroundColor: currentTheme.background },
-              isTimerVisible && { backgroundColor: currentTheme.border }
-            ]}
-            onPress={() => {
-              setIsTimerVisible(!isTimerVisible);
-            }}
-            activeOpacity={0.7}
-          >
-            <SvgXml xml={getTimerSvg(isTimerVisible, currentTheme)} width="28" height="28" />
-          </TouchableOpacity>
-        </View>
-        <Text style={[styles.logoText, { color: currentTheme.text }]}>कार्य</Text>
-        <View style={styles.headerRight}>
-          <TouchableOpacity
-            style={[styles.themeButton, { backgroundColor: currentTheme.background }]}
-            onPress={handleToggleTheme}
-            activeOpacity={0.7}
-          >
-            <SvgXml xml={getThemeSvg(isDarkTheme, currentTheme)} width="28" height="28" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Date */}
-      <View style={styles.dateContainer}>
-        <Text style={[styles.dateText, { color: currentTheme.text }]}>{currentDate}</Text>
-      </View>
+      <HeaderBar
+        isTimerVisible={isTimerVisible}
+        onToggleTimer={() => {
+          setIsTimerVisible(!isTimerVisible);
+        }}
+        isDarkTheme={isDarkTheme}
+        onToggleTheme={handleToggleTheme}
+        theme={currentTheme}
+      />
 
       {/* Timer Panel (compact timer + zen button) */}
       <TimerPanel
@@ -500,71 +259,22 @@ export default function TodoScreen() {
       </TouchableOpacity>
 
       {/* Add Task Modal */}
-      <Modal
+      <AddTaskModal
         visible={isAddModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={handleCloseModal}
-      >
-        <KeyboardAvoidingView 
-          style={styles.keyboardAvoidingView}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-          <TouchableOpacity 
-            style={styles.modalOverlay}
-            activeOpacity={1}
-            onPress={handleCloseModal}
-          >
-            <View style={[styles.modalContent, { backgroundColor: currentTheme.background }]} onStartShouldSetResponder={() => true}>
-             {/* Drag Indicator */}
-             <View style={[styles.dragIndicator, { backgroundColor: currentTheme.text }]} />
-             <Text style={[styles.modalTitle, { color: currentTheme.text }]}>Add New Task</Text>
-            <TextInput
-              style={[
-                styles.taskInput, 
-                { 
-                  borderColor: currentTheme.border,
-                  color: currentTheme.text,
-                  backgroundColor: currentTheme.cardBackground
-                }
-              ]}
-              placeholder="What needs to be done?"
-              placeholderTextColor={`${currentTheme.text}66`}
-              value={newTaskText}
-              onChangeText={setNewTaskText}
-              autoFocus
-              multiline
-              maxLength={100}
-            />
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[
-                  styles.modalButton, 
-                  styles.cancelButton,
-                  { borderColor: currentTheme.border }
-                ]}
-                onPress={handleCloseModal}
-              >
-                <Text style={[styles.cancelButtonText, { color: currentTheme.text }]}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.modalButton, 
-                  styles.saveButton,
-                  { backgroundColor: currentTheme.border }
-                ]}
-                onPress={handleAddTask}
-              >
-                <Text style={[
-                  styles.saveButtonText, 
-                  { color: isDarkTheme ? currentTheme.background : '#FAEBD7' }
-                ]}>Add Task</Text>
-              </TouchableOpacity>
-            </View>
-            </View>
-          </TouchableOpacity>
-        </KeyboardAvoidingView>
-      </Modal>
+        theme={currentTheme}
+        isDarkTheme={isDarkTheme}
+        onClose={handleCloseModal}
+        onAdd={async (text) => {
+          try {
+            const newTask = await taskStorage.addTask(text.trim());
+            if (newTask) {
+              setTasks(prevTasks => [...prevTasks, newTask]);
+            }
+          } catch (error) {
+            console.error('Error adding task:', error);
+          }
+        }}
+      />
     </GestureHandlerRootView>
   );
 }
@@ -584,36 +294,22 @@ const styles = StyleSheet.create({
     color: '#90574D',
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 32,
-    paddingTop: 60,
-    paddingBottom: 24,
+    
   },
   headerLeft: {
-    flex: 1,
-    alignItems: 'flex-start',
+    
   },
   headerRight: {
-    flex: 1,
-    alignItems: 'flex-end',
+    
   },
   logoText: {
-    fontFamily: 'PlayfairDisplay-Bold',
-    fontSize: 40,
-    color: '#90574D',
-    fontWeight: '700',
+    
   },
   dateContainer: {
-    paddingHorizontal: 32,
-    marginBottom: 60,
+    
   },
   dateText: {
-    fontSize: 20,
-    color: '#90574D',
-    fontWeight: '600',
-    opacity: 0.75,
+    
   },
   mainContent: {
     flex: 1,
@@ -668,87 +364,49 @@ const styles = StyleSheet.create({
   },
   // Optimized Swipeable Styles
   swipeableContainer: {
-    marginHorizontal: 32,
-    marginVertical: 4,
-    borderRadius: 12,
-    overflow: 'hidden',
+    
   },
   swipeableChildrenContainer: {
-    borderRadius: 12,
+    
   },
   taskContainer: {
-    backgroundColor: '#FAEBD7',
-    borderRadius: 12,
+    
   },
   deleteActionContainer: {
-    width: 80,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#E8D5C4',
-    borderTopRightRadius: 12,
-    borderBottomRightRadius: 12,
+    
   },
   deleteAction: {
-    width: 80,
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
+    
   },
   deleteButton: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
+    
   },
   trashIconContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 8,
+    
   },
   fallbackIcon: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    
   },
   fallbackIconText: {
-    fontSize: 18,
-    color: '#90574D',
+    
   },
   taskItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    backgroundColor: '#FAEBD7',
-    minHeight: 60,
+    
   },
   checkbox: {
-    width: 24,
-    height: 24,
-    borderWidth: 2,
-    borderColor: '#90574D',
-    borderRadius: 4,
-    marginRight: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    
   },
   checkboxCompleted: {
-    backgroundColor: '#90574D',
-    borderColor: '#90574D',
+    
   },
   checkmark: {
-    fontSize: 14,
-    color: '#FAEBD7',
-    fontWeight: 'bold',
+    
   },
   taskText: {
-    fontFamily: 'PlayfairDisplay-Regular',
-    fontSize: 18,
-    color: '#90574D',
-    flex: 1,
+    
   },
   taskTextCompleted: {
-    textDecorationLine: 'line-through',
-    opacity: 0.6,
+    
   },
   taskList: {
     paddingTop: 16,
@@ -763,77 +421,40 @@ const styles = StyleSheet.create({
     maxHeight: 300, // Limit height to ensure timer and tasks both fit
   },
   keyboardAvoidingView: {
-    flex: 1,
+    
   },
   modalOverlay: {
-    flex: 1,
-    backgroundColor: 'transparent',
-    justifyContent: 'flex-end',
+    
   },
   modalContent: {
-    backgroundColor: '#FAEBD7',
-    padding: 32,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    width: '100%',
+    
   },
   dragIndicator: {
-    width: 40,
-    height: 4,
-    backgroundColor: '#90574D',
-    borderRadius: 2,
-    alignSelf: 'center',
-    marginTop: -16,
-    marginBottom: 24,
-    opacity: 0.3,
+    
   },
   modalTitle: {
-    fontFamily: 'PlayfairDisplay-Bold',
-    fontSize: 24,
-    color: '#90574D',
-    marginBottom: 24,
+    
   },
   taskInput: {
-    fontFamily: 'PlayfairDisplay-Regular',
-    fontSize: 18,
-    color: '#90574D',
-    padding: 16,
-    borderWidth: 2,
-    borderColor: '#90574D',
-    borderRadius: 8,
-    marginBottom: 8,
-    minHeight: 60,
+    
   },
   modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 24,
+    
   },
   modalButton: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    marginHorizontal: 8,
-    alignItems: 'center',
+    
   },
   cancelButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: '#90574D',
+    
   },
   cancelButtonText: {
-    fontFamily: 'PlayfairDisplay-Medium',
-    fontSize: 16,
-    color: '#90574D',
+    
   },
   saveButton: {
-    backgroundColor: '#90574D',
+    
   },
   saveButtonText: {
-    fontFamily: 'PlayfairDisplay-Medium',
-    fontSize: 16,
-    color: '#FAEBD7',
+    
   },
   timerButton: {
     padding: 12,
