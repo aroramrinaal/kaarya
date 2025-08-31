@@ -1,41 +1,35 @@
 import * as Font from 'expo-font';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-    Animated,
-    FlatList,
-    Keyboard,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Animated,
+  FlatList,
+  Keyboard,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
 import { SvgXml } from 'react-native-svg';
 import { useTimer } from '../hooks/useTimer';
 import { Task, taskStorage } from '../utils/storage';
-import TimerDisplay from './components/TimerDisplay';
+import TimerPanel from './components/TimerPanel';
+import ZenMode from './components/ZenMode';
+import type { AppTheme } from './components/types';
 
 
-const getTimerSvg = (isActive: boolean, theme: typeof themes.light) => `
+const getTimerSvg = (isActive: boolean, theme: AppTheme) => `
 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M12 13V9M21 6L19 4M10 2H14M12 21C7.58172 21 4 17.4183 4 13C4 8.58172 7.58172 5 12 5C16.4183 5 20 8.58172 20 13C20 17.4183 16.4183 21 12 21Z" stroke="${isActive ? theme.background : theme.border}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 `;
 
-const getZenSvg = () => `
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<circle cx="12" cy="12" r="10" stroke="#90574D" stroke-width="1.5" fill="none"/>
-<circle cx="12" cy="12" r="6" stroke="#90574D" stroke-width="1" fill="none"/>
-<circle cx="12" cy="12" r="2" fill="#90574D"/>
-</svg>
-`;
-
-const getThemeSvg = (isDark: boolean, theme: typeof themes.light) => `
+const getThemeSvg = (isDark: boolean, theme: AppTheme) => `
 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 ${isDark ? 
   `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="none" stroke="${theme.border}" stroke-width="2"/>` :
@@ -77,7 +71,7 @@ const TaskItem = React.memo(({
   onToggle: (id: string) => void; 
   onDelete: (id: string) => void;
   trashSvg: string;
-  theme: typeof themes.light;
+  theme: AppTheme;
 }) => {
   const swipeableRef = useRef<Swipeable>(null);
 
@@ -387,29 +381,17 @@ export default function TodoScreen() {
   // Zen Mode Render
   if (isZenMode) {
     return (
-      <TouchableOpacity 
-        style={styles.zenContainer}
-        activeOpacity={1}
-        onPress={handleExitZenMode}
-      >
-        <StatusBar barStyle="light-content" backgroundColor="#2A1810" />
-        <View style={styles.zenContent}>
-          <Text style={styles.zenHintText}>Tap anywhere to exit zen mode.</Text>
-          <TimerDisplay
-            isVisible={true}
-            timeLeft={timeLeft}
-            isRunning={isRunning}
-            isCompleted={isCompleted}
-            progress={progress}
-            onStart={start}
-            onPause={pause}
-            onReset={reset}
-            onClose={handleExitZenMode}
-            compact={false}
-            zenMode={true}
-          />
-        </View>
-      </TouchableOpacity>
+      <ZenMode
+        visible={true}
+        timeLeft={timeLeft}
+        isRunning={isRunning}
+        isCompleted={isCompleted}
+        progress={progress}
+        onStart={start}
+        onPause={pause}
+        onReset={reset}
+        onExit={handleExitZenMode}
+      />
     );
   }
 
@@ -451,8 +433,8 @@ export default function TodoScreen() {
         <Text style={[styles.dateText, { color: currentTheme.text }]}>{currentDate}</Text>
       </View>
 
-      {/* Timer Display */}
-      <TimerDisplay
+      {/* Timer Panel (compact timer + zen button) */}
+      <TimerPanel
         isVisible={isTimerVisible}
         timeLeft={timeLeft}
         isRunning={isRunning}
@@ -462,24 +444,9 @@ export default function TodoScreen() {
         onPause={pause}
         onReset={reset}
         onClose={() => setIsTimerVisible(false)}
-        compact={true}
-        zenMode={false}
+        onEnterZen={handleEnterZenMode}
         theme={currentTheme}
       />
-
-      {/* Zen Mode Button */}
-      {isTimerVisible && (
-        <View style={styles.zenButtonContainer}>
-          <TouchableOpacity
-            style={[styles.zenButton, { borderColor: currentTheme.border }]}
-            onPress={handleEnterZenMode}
-            activeOpacity={0.7}
-          >
-            <SvgXml xml={getZenSvg()} width="20" height="20" />
-            <Text style={[styles.zenButtonText, { color: currentTheme.text }]}>Zen Mode</Text>
-          </TouchableOpacity>
-        </View>
-      )}
 
       {/* Main Content */}
       {!isLoading && tasks.length === 0 ? (
@@ -874,56 +841,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAEBD7',
   },
   timerButtonActive: {
-    backgroundColor: '#90574D',
+    
   },
   themeButton: {
     padding: 12,
     borderRadius: 12,
     backgroundColor: '#FAEBD7',
   },
-  // Zen Mode Styles
-  zenContainer: {
-    flex: 1,
-    backgroundColor: '#2A1810', // Dark brown background
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  zenContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  zenButtonContainer: {
-    alignItems: 'center',
-    paddingHorizontal: 32,
-    paddingBottom: 20,
-  },
-  zenButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    backgroundColor: 'transparent',
-    borderWidth: 1.5,
-    borderColor: '#90574D',
-    borderRadius: 20,
-    gap: 8,
-  },
-  zenButtonText: {
-    fontFamily: 'PlayfairDisplay-Medium',
-    fontSize: 16,
-    color: '#90574D',
-    fontWeight: '500',
-  },
-  zenHintText: {
-    fontFamily: 'PlayfairDisplay-Medium',
-    fontSize: 16,
-    color: '#D4A574',
-    textAlign: 'center',
-    marginBottom: 40,
-    opacity: 0.8,
-    letterSpacing: 0.5,
-  },
+  // Zen Mode Styles moved to components/ZenMode
 });
