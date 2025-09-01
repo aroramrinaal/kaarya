@@ -18,8 +18,11 @@ const TaskItem = React.memo(({ item, onToggle, onDelete, trashSvg, theme }: Prop
   }, [item.id, onToggle]);
 
   return (
-    <View style={[styles.taskContainer, { backgroundColor: theme.cardBackground }]}> 
-      <View style={[styles.taskItem, { backgroundColor: theme.cardBackground }]}> 
+    <View style={[
+      styles.taskContainer,
+      { backgroundColor: theme.statusBarStyle === 'light-content' ? 'transparent' : theme.cardBackground }
+    ]}> 
+      <View style={styles.taskItem}> 
         <TouchableOpacity
           style={styles.leftContent}
           onPress={handleToggle}
@@ -70,7 +73,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   taskContainer: {
-    backgroundColor: '#FAEBD7',
+    backgroundColor: 'transparent',
     borderRadius: 12,
     marginHorizontal: 32,
     marginVertical: 4,
@@ -112,7 +115,7 @@ const styles = StyleSheet.create({
   taskItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FAEBD7',
+    backgroundColor: 'transparent',
     minHeight: 60,
   },
   leftContent: {
