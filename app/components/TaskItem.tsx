@@ -1,6 +1,5 @@
-import React, { useCallback, useRef } from 'react';
-import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Swipeable } from 'react-native-gesture-handler';
+import React, { useCallback } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 import type { AppTheme } from '../../types';
 import type { Task } from '../../utils/storage';
@@ -14,99 +13,47 @@ type Props = {
 };
 
 const TaskItem = React.memo(({ item, onToggle, onDelete, trashSvg, theme }: Props) => {
-  const swipeableRef = useRef<Swipeable>(null);
-
-  const renderRightActions = useCallback((
-    progress: Animated.AnimatedAddition<number>,
-    dragX: Animated.AnimatedAddition<number>
-  ) => {
-    const scale = dragX.interpolate({
-      inputRange: [-80, -40, 0],
-      outputRange: [1, 0.9, 0.8],
-      extrapolate: 'clamp',
-    });
-
-    const opacity = dragX.interpolate({
-      inputRange: [-80, -40, 0],
-      outputRange: [1, 0.8, 0],
-      extrapolate: 'clamp',
-    });
-
-    return (
-      <View style={[styles.deleteActionContainer, { backgroundColor: theme.deleteBackground }]}>
-        <Animated.View 
-          style={[styles.deleteAction, { opacity, transform: [{ scale }] }]}
-        >
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={() => {
-              swipeableRef.current?.close();
-              setTimeout(() => onDelete(item.id), 100);
-            }}
-            activeOpacity={0.7}
-          >
-            <View style={styles.trashIconContainer}>
-              {trashSvg ? (
-                <SvgXml 
-                  xml={trashSvg.replace(/fill="[^"]*"/g, `fill="${theme.text}"`).replace(/stroke="[^"]*"/g, `stroke="${theme.text}"`)} 
-                  width="22" 
-                  height="22" 
-                />
-              ) : (
-                <View style={styles.fallbackIcon}>
-                  <Text style={[styles.fallbackIconText, { color: theme.text }]}>🗑</Text>
-                </View>
-              )}
-            </View>
-          </TouchableOpacity>
-        </Animated.View>
-      </View>
-    );
-  }, [item.id, onDelete, trashSvg, theme]);
-
-  const handleSwipeOpen = useCallback((direction: 'left' | 'right') => {
-    if (direction === 'right') {
-      setTimeout(() => {
-        swipeableRef.current?.close();
-      }, 2000);
-    }
-  }, []);
-
   const handleToggle = useCallback(() => {
     onToggle(item.id);
   }, [item.id, onToggle]);
 
   return (
-    <Swipeable
-      ref={swipeableRef}
-      renderRightActions={renderRightActions}
-      onSwipeableOpen={handleSwipeOpen}
-      rightThreshold={30}
-      leftThreshold={1000}
-      friction={2}
-      overshootRight={false}
-      overshootLeft={false}
-      overshootFriction={8}
-      enableTrackpadTwoFingerGesture={true}
-      useNativeAnimations={true}
-      containerStyle={styles.swipeableContainer}
-      childrenContainerStyle={styles.swipeableChildrenContainer}
-    >
-      <View style={[styles.taskContainer, { backgroundColor: theme.cardBackground }]}>
+    <View style={[styles.taskContainer, { backgroundColor: theme.cardBackground }]}> 
+      <View style={[styles.taskItem, { backgroundColor: theme.cardBackground }]}> 
         <TouchableOpacity
-          style={[styles.taskItem, { backgroundColor: theme.cardBackground }]}
+          style={styles.leftContent}
           onPress={handleToggle}
           activeOpacity={0.7}
         >
-          <View style={[styles.checkbox, { borderColor: theme.border }, item.completed && { backgroundColor: theme.border, borderColor: theme.border }]}>
+          <View style={[styles.checkbox, { borderColor: theme.border }, item.completed && { backgroundColor: theme.border, borderColor: theme.border }]}> 
             {item.completed && <Text style={[styles.checkmark, { color: theme.background }]}>✓</Text>}
           </View>
           <Text style={[styles.taskText, { color: theme.text }, item.completed && styles.taskTextCompleted]}>
             {item.text}
           </Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.trailingDeleteButton, { backgroundColor: theme.deleteBackground }]}
+          onPress={() => onDelete(item.id)}
+          activeOpacity={0.7}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <View style={styles.trashIconContainer}>
+            {trashSvg ? (
+              <SvgXml
+                xml={trashSvg.replace(/fill=\"[^\"]*\"/g, `fill=\"${theme.text}\"`).replace(/stroke=\"[^\"]*\"/g, `stroke=\"${theme.text}\"`)}
+                width="22"
+                height="22"
+              />
+            ) : (
+              <View style={styles.fallbackIcon}>
+                <Text style={[styles.fallbackIconText, { color: theme.text }]}>🗑</Text>
+              </View>
+            )}
+          </View>
+        </TouchableOpacity>
       </View>
-    </Swipeable>
+    </View>
   );
 });
 
@@ -125,6 +72,9 @@ const styles = StyleSheet.create({
   taskContainer: {
     backgroundColor: '#FAEBD7',
     borderRadius: 12,
+    marginHorizontal: 32,
+    marginVertical: 4,
+    overflow: 'hidden',
   },
   deleteActionContainer: {
     width: 80,
@@ -162,10 +112,16 @@ const styles = StyleSheet.create({
   taskItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
     backgroundColor: '#FAEBD7',
     minHeight: 60,
+  },
+  leftContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingLeft: 16,
+    paddingRight: 8,
+    flex: 1,
   },
   checkbox: {
     width: 24,
@@ -191,6 +147,14 @@ const styles = StyleSheet.create({
   taskTextCompleted: {
     textDecorationLine: 'line-through',
     opacity: 0.6,
+  },
+  trailingDeleteButton: {
+    width: 56,
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderTopRightRadius: 12,
+    borderBottomRightRadius: 12,
   },
 });
 

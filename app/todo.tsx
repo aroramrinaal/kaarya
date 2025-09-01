@@ -6,7 +6,6 @@ import {
   Text,
   View
 } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useAppFonts } from '../hooks/useAppFonts';
 import { themes } from '../types';
 import { Task, taskStorage } from '../utils/storage';
@@ -153,7 +152,7 @@ export default function TodoScreen() {
   // }
 
   return (
-    <GestureHandlerRootView style={[styles.container, { backgroundColor: currentTheme.background }]}>
+    <View style={[styles.container, { backgroundColor: currentTheme.background }]}> 
       <StatusBar barStyle={currentTheme.statusBarStyle} backgroundColor={currentTheme.background} />
       
       <HeaderBar
@@ -238,7 +237,7 @@ export default function TodoScreen() {
           }
         }}
       />
-    </GestureHandlerRootView>
+    </View>
   );
 }
 
