@@ -165,6 +165,10 @@ export default function TodoScreen() {
     />
   ), [handleToggleTask, handleDeleteTask, currentTheme]);
 
+  const renderSeparator = useCallback(() => (
+    <View style={{ height: 8 }} />
+  ), []);
+
   const keyExtractor = useCallback((item: Task) => item.id, []);
 
   // Show loading state
@@ -244,6 +248,7 @@ export default function TodoScreen() {
           data={tasks}
           renderItem={renderTask}
           keyExtractor={keyExtractor}
+          ItemSeparatorComponent={renderSeparator}
           contentContainerStyle={[
             styles.taskList
           ]}
@@ -251,11 +256,6 @@ export default function TodoScreen() {
           removeClippedSubviews={true}
           maxToRenderPerBatch={10}
           windowSize={10}
-          getItemLayout={(data, index) => ({
-            length: 68,
-            offset: 68 * index,
-            index,
-          })}
         />
       )}
 

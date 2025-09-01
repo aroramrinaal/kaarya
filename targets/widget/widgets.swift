@@ -93,7 +93,7 @@ struct widgetEntryView : View {
         let bg = Color(hex: "#FAEBD7") ?? .clear
         let textColor = Color(hex: "#90574D") ?? .primary
         VStack(alignment: .leading, spacing: 6) {
-            Text("Kaarya Today")
+            Text("Kaarya(s)")
                 .font(.headline)
                 .foregroundStyle(textColor)
             if entry.tasks.isEmpty {

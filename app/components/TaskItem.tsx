@@ -65,7 +65,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderRadius: 12,
     marginHorizontal: 32,
-    marginVertical: 4,
     overflow: 'hidden',
   },
   deleteActionContainer: {
@@ -105,12 +104,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'transparent',
-    minHeight: 60,
+    height: 56,
   },
   leftContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: 12,
     paddingLeft: 16,
     paddingRight: 8,
     flex: 1,
