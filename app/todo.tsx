@@ -1,3 +1,4 @@
+import { ExtensionStorage } from '@bacons/apple-targets';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   FlatList,
@@ -32,6 +33,37 @@ export default function TodoScreen() {
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const currentTheme = themes[isDarkTheme ? 'dark' : 'light'];
 
+  // Shared storage for widget
+  const extensionStorage = new ExtensionStorage('group.aroramrinaal.kaarya');
+
+  const isSameCalendarDay = (a: Date, b: Date) => {
+    return (
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate()
+    );
+  };
+
+  const syncWidgetWithTasks = useCallback(
+    (date: Date, list: Task[]) => {
+      const today = new Date();
+      // Only sync today's tasks to the widget
+      if (!isSameCalendarDay(date, today)) {
+        extensionStorage.set('kaarya_today_tasks', []);
+        // No reload to avoid unnecessary updates
+        return;
+      }
+
+      // Map to a compact shape for the widget
+      const widgetTasks = list.map(t => ({ id: t.id, title: t.text, completed: !!t.completed }));
+      // Store as JSON string for maximum compatibility with Swift decoder paths
+      extensionStorage.set('kaarya_today_tasks', JSON.stringify(widgetTasks) as unknown as string);
+      // Reload all widget timelines to ensure refresh
+      ExtensionStorage.reloadWidget();
+    },
+    []
+  );
+
   // Load tasks whenever selected date changes
   useEffect(() => {
     loadTasksForDate(selectedDate);
@@ -50,6 +82,11 @@ export default function TodoScreen() {
       setIsLoading(false);
     }
   };
+
+  // Keep widget in sync whenever tasks or selected date change
+  useEffect(() => {
+    syncWidgetWithTasks(selectedDate, tasks);
+  }, [selectedDate, tasks, syncWidgetWithTasks]);
 
   // Optimized handlers with useCallback
   const handleToggleTask = useCallback(async (taskId: string) => {

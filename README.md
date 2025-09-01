@@ -19,6 +19,16 @@ Background #FAEBD7 and text #90574D
 
 ## Commands
 
+### run iOS with widget (simulator)
+To rebuild native iOS (including the widget) and run on Simulator:
+```bash
+npx expo prebuild -p ios --clean
+npx expo run:ios
+```
+Notes:
+- The clean prebuild regenerates the native project and links the widget target.
+- You can also open Xcode with `xed ios` and run either the app or the widget target directly.
+
 ### optional dev test build
 ```bash
 eas build --profile development --platform ios 
