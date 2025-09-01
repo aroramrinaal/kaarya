@@ -33,7 +33,7 @@ const TaskItem = React.memo(({ item, onToggle, onDelete, trashSvg, theme }: Prop
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.trailingDeleteButton, { backgroundColor: theme.deleteBackground }]}
+          style={styles.trailingDeleteButton}
           onPress={() => onDelete(item.id)}
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -41,13 +41,13 @@ const TaskItem = React.memo(({ item, onToggle, onDelete, trashSvg, theme }: Prop
           <View style={styles.trashIconContainer}>
             {trashSvg ? (
               <SvgXml
-                xml={trashSvg.replace(/fill=\"[^\"]*\"/g, `fill=\"${theme.text}\"`).replace(/stroke=\"[^\"]*\"/g, `stroke=\"${theme.text}\"`)}
+                xml={trashSvg.replace(/fill=\"[^\"]*\"/g, `fill=\"${theme.border}\"`).replace(/stroke=\"[^\"]*\"/g, `stroke=\"${theme.border}\"`)}
                 width="22"
                 height="22"
               />
             ) : (
               <View style={styles.fallbackIcon}>
-                <Text style={[styles.fallbackIconText, { color: theme.text }]}>🗑</Text>
+                <Text style={[styles.fallbackIconText, { color: theme.border }]}>🗑</Text>
               </View>
             )}
           </View>
@@ -149,12 +149,11 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   trailingDeleteButton: {
-    width: 56,
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    borderTopRightRadius: 12,
-    borderBottomRightRadius: 12,
+    paddingHorizontal: 12,
+    opacity: 0.85,
   },
 });
 
