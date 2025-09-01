@@ -42,7 +42,7 @@ export default function DateHeader({ theme }: Props) {
 const styles = StyleSheet.create({
   dateContainer: {
     paddingHorizontal: 32,
-    marginBottom: 60,
+    marginBottom: 24,
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
