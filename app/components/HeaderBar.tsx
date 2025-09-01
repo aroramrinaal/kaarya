@@ -3,11 +3,12 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
 import type { AppTheme } from '../../types';
 
-const getTimerSvg = (isActive: boolean, theme: AppTheme) => `
-<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M12 13V9M21 6L19 4M10 2H14M12 21C7.58172 21 4 17.4183 4 13C4 8.58172 7.58172 5 12 5C16.4183 5 20 8.58172 20 13C20 17.4183 16.4183 21 12 21Z" stroke="${isActive ? theme.background : theme.border}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-`;
+// Timer SVG - COMMENTED OUT FOR NOW
+// const getTimerSvg = (isActive: boolean, theme: AppTheme) => `
+// <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+// <path d="M12 13V9M21 6L19 4M10 2H14M12 21C7.58172 21 4 17.4183 4 13C4 8.58172 7.58172 5 12 5C16.4183 5 20 8.58172 20 13C20 17.4183 16.4183 21 12 21Z" stroke="${isActive ? theme.background : theme.border}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+// </svg>
+// `;
 
 const getThemeSvg = (isDark: boolean, theme: AppTheme) => `
 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -20,24 +21,26 @@ ${isDark ?
 `;
 
 type Props = {
-  isTimerVisible: boolean;
-  onToggleTimer: () => void;
+  // Timer props commented out for now
+  // isTimerVisible: boolean;
+  // onToggleTimer: () => void;
   isDarkTheme: boolean;
   onToggleTheme: () => void;
   theme: AppTheme;
 };
 
-export default function HeaderBar({ isTimerVisible, onToggleTimer, isDarkTheme, onToggleTheme, theme }: Props) {
+export default function HeaderBar({ isDarkTheme, onToggleTheme, theme }: Props) {
   return (
     <View style={styles.header}>
       <View style={styles.headerLeft}>
-        <TouchableOpacity 
+        {/* Timer button commented out for now */}
+        {/* <TouchableOpacity 
           style={[styles.timerButton, { backgroundColor: theme.background }, isTimerVisible && { backgroundColor: theme.border }]}
           onPress={onToggleTimer}
           activeOpacity={0.7}
         >
           <SvgXml xml={getTimerSvg(isTimerVisible, theme)} width="28" height="28" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
       <Text style={[styles.logoText, { color: theme.text }]}>कार्य</Text>
       <View style={styles.headerRight}>
@@ -76,11 +79,12 @@ const styles = StyleSheet.create({
     color: '#90574D',
     fontWeight: '700',
   },
-  timerButton: {
-    padding: 12,
-    borderRadius: 12,
-    backgroundColor: '#FAEBD7',
-  },
+  // Timer button style commented out for now
+  // timerButton: {
+  //   padding: 12,
+  //   borderRadius: 12,
+  //   backgroundColor: '#FAEBD7',
+  // },
   themeButton: {
     padding: 12,
     borderRadius: 12,

@@ -30,10 +30,10 @@ export default function TodoScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [trashSvg, setTrashSvg] = useState('');
   
-  // Timer state
-  const [isTimerVisible, setIsTimerVisible] = useState(false);
-  const [isZenMode, setIsZenMode] = useState(false);
-  const { timeLeft, isRunning, isCompleted, progress, start, pause, reset } = useTimer();
+  // Timer state - COMMENTED OUT FOR NOW
+  // const [isTimerVisible, setIsTimerVisible] = useState(false);
+  // const [isZenMode, setIsZenMode] = useState(false);
+  // const { timeLeft, isRunning, isCompleted, progress, start, pause, reset } = useTimer();
   
   // Theme state
   const [isDarkTheme, setIsDarkTheme] = useState(false);
@@ -102,14 +102,14 @@ export default function TodoScreen() {
     setIsAddModalVisible(false);
   }, []);
 
-  // Zen mode handlers
-  const handleEnterZenMode = useCallback(() => {
-    setIsZenMode(true);
-  }, []);
+  // Zen mode handlers - COMMENTED OUT FOR NOW
+  // const handleEnterZenMode = useCallback(() => {
+  //   setIsZenMode(true);
+  // }, []);
 
-  const handleExitZenMode = useCallback(() => {
-    setIsZenMode(false);
-  }, []);
+  // const handleExitZenMode = useCallback(() => {
+  //   setIsZenMode(false);
+  // }, []);
 
   // Theme handlers
   const handleToggleTheme = useCallback(() => {
@@ -142,32 +142,32 @@ export default function TodoScreen() {
     );
   }
 
-  // Zen Mode Render
-  if (isZenMode) {
-    return (
-      <ZenMode
-        visible={true}
-        timeLeft={timeLeft}
-        isRunning={isRunning}
-        isCompleted={isCompleted}
-        progress={progress}
-        onStart={start}
-        onPause={pause}
-        onReset={reset}
-        onExit={handleExitZenMode}
-      />
-    );
-  }
+  // Zen Mode Render - COMMENTED OUT FOR NOW
+  // if (isZenMode) {
+  //   return (
+  //     <ZenMode
+  //       visible={true}
+  //       timeLeft={timeLeft}
+  //       isRunning={isRunning}
+  //       isCompleted={isCompleted}
+  //       progress={progress}
+  //       onStart={start}
+  //       onPause={pause}
+  //       onReset={reset}
+  //       onExit={handleExitZenMode}
+  //     />
+  //   );
+  // }
 
   return (
     <GestureHandlerRootView style={[styles.container, { backgroundColor: currentTheme.background }]}>
       <StatusBar barStyle={currentTheme.statusBarStyle} backgroundColor={currentTheme.background} />
       
       <HeaderBar
-        isTimerVisible={isTimerVisible}
-        onToggleTimer={() => {
-          setIsTimerVisible(!isTimerVisible);
-        }}
+        // isTimerVisible={isTimerVisible}
+        // onToggleTimer={() => {
+        //   setIsTimerVisible(!isTimerVisible);
+        // }}
         isDarkTheme={isDarkTheme}
         onToggleTheme={handleToggleTheme}
         theme={currentTheme}
@@ -175,9 +175,10 @@ export default function TodoScreen() {
 
       <DateHeader theme={currentTheme} />
 
-      {/* Timer Panel (compact timer + zen button) */}
-      <TimerPanel
-        isVisible={isTimerVisible}
+      {/* Timer Panel (compact timer + zen button) - COMMENTED OUT FOR NOW */}
+     
+     {/* <TimerPanel
+       {/*  isVisible={isTimerVisible}
         timeLeft={timeLeft}
         isRunning={isRunning}
         isCompleted={isCompleted}
@@ -188,14 +189,13 @@ export default function TodoScreen() {
         onClose={() => setIsTimerVisible(false)}
         onEnterZen={handleEnterZenMode}
         theme={currentTheme}
-      />
+      /> */}
 
       {/* Main Content */}
       {!isLoading && tasks.length === 0 ? (
-        <View style={[styles.mainContent, isTimerVisible && styles.mainContentWithTimer]}>
+        <View style={[styles.mainContent]}>
           <Text style={[
             styles.mainMessage, 
-            isTimerVisible && styles.mainMessageCompact,
             { color: currentTheme.text }
           ]}>
             You don't have any tasks yet. Press + to create your first Kaarya.
@@ -207,10 +207,8 @@ export default function TodoScreen() {
           renderItem={renderTask}
           keyExtractor={keyExtractor}
           contentContainerStyle={[
-            styles.taskList,
-            isTimerVisible && styles.taskListWithTimer
+            styles.taskList
           ]}
-          style={isTimerVisible ? styles.taskListScrollable : undefined}
           showsVerticalScrollIndicator={false}
           removeClippedSubviews={true}
           maxToRenderPerBatch={10}
