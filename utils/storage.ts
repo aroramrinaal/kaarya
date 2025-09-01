@@ -23,6 +23,14 @@ const getTodayKey = (): string => {
   return `tasks_${year}-${month}-${day}`;
 };
 
+// Helper function to get a date key for any given date
+const getDateKey = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `tasks_${year}-${month}-${day}`;
+};
+
 // Onboarding functions
 export const onboardingStorage = {
   // Check if user has seen onboarding
@@ -79,6 +87,28 @@ export const taskStorage = {
     }
   },
 
+  // Get tasks for a specific date (kept for future and now usage)
+  getTasksForDate: async (date: Date): Promise<Task[]> => {
+    try {
+      const dateKey = getDateKey(date);
+      const tasksJson = await AsyncStorage.getItem(dateKey);
+      return tasksJson ? JSON.parse(tasksJson) : [];
+    } catch (error) {
+      console.error('Error getting tasks for date:', error);
+      return [];
+    }
+  },
+
+  // Save tasks for a specific date
+  saveTasksForDate: async (date: Date, tasks: Task[]): Promise<void> => {
+    try {
+      const dateKey = getDateKey(date);
+      await AsyncStorage.setItem(dateKey, JSON.stringify(tasks));
+    } catch (error) {
+      console.error('Error saving tasks for date:', error);
+    }
+  },
+
   // Add a new task
   addTask: async (taskText: string): Promise<Task | null> => {
     try {
@@ -100,6 +130,27 @@ export const taskStorage = {
     }
   },
 
+  // Add a new task for a specific date
+  addTaskForDate: async (date: Date, taskText: string): Promise<Task | null> => {
+    try {
+      const newTask: Task = {
+        id: Date.now().toString(),
+        text: taskText,
+        completed: false,
+        createdAt: new Date().toISOString(),
+      };
+
+      const currentTasks = await taskStorage.getTasksForDate(date);
+      const updatedTasks = [...currentTasks, newTask];
+      await taskStorage.saveTasksForDate(date, updatedTasks);
+
+      return newTask;
+    } catch (error) {
+      console.error('Error adding task for date:', error);
+      return null;
+    }
+  },
+
   // Toggle task completion
   toggleTask: async (taskId: string): Promise<boolean> => {
     try {
@@ -111,6 +162,21 @@ export const taskStorage = {
       return true;
     } catch (error) {
       console.error('Error toggling task:', error);
+      return false;
+    }
+  },
+
+  // Toggle task completion for a specific date
+  toggleTaskForDate: async (date: Date, taskId: string): Promise<boolean> => {
+    try {
+      const currentTasks = await taskStorage.getTasksForDate(date);
+      const updatedTasks = currentTasks.map(task =>
+        task.id === taskId ? { ...task, completed: !task.completed } : task
+      );
+      await taskStorage.saveTasksForDate(date, updatedTasks);
+      return true;
+    } catch (error) {
+      console.error('Error toggling task for date:', error);
       return false;
     }
   },
@@ -128,6 +194,19 @@ export const taskStorage = {
     }
   },
 
+  // Delete a task for a specific date
+  deleteTaskForDate: async (date: Date, taskId: string): Promise<boolean> => {
+    try {
+      const currentTasks = await taskStorage.getTasksForDate(date);
+      const updatedTasks = currentTasks.filter(task => task.id !== taskId);
+      await taskStorage.saveTasksForDate(date, updatedTasks);
+      return true;
+    } catch (error) {
+      console.error('Error deleting task for date:', error);
+      return false;
+    }
+  },
+
   // Clear all tasks for today (optional utility)
   clearTodayTasks: async (): Promise<void> => {
     try {
@@ -138,19 +217,13 @@ export const taskStorage = {
     }
   },
 
-  // Get tasks for a specific date (for future use)
-  getTasksForDate: async (date: Date): Promise<Task[]> => {
+  // Clear all tasks for a specific date
+  clearTasksForDate: async (date: Date): Promise<void> => {
     try {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const dateKey = `tasks_${year}-${month}-${day}`;
-      
-      const tasksJson = await AsyncStorage.getItem(dateKey);
-      return tasksJson ? JSON.parse(tasksJson) : [];
+      const dateKey = getDateKey(date);
+      await AsyncStorage.removeItem(dateKey);
     } catch (error) {
-      console.error('Error getting tasks for date:', error);
-      return [];
+      console.error('Error clearing tasks for date:', error);
     }
   },
 }; 

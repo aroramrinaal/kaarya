@@ -2,15 +2,19 @@ import React, { useMemo } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import type { AppTheme } from '../../types';
 
-type Props = { theme: AppTheme };
+type Props = { 
+  theme: AppTheme;
+  date: Date;
+  onPrevDay: () => void;
+  onNextDay: () => void;
+};
 
-export default function DateHeader({ theme }: Props) {
+export default function DateHeader({ theme, date, onPrevDay, onNextDay }: Props) {
   const dateString = useMemo(() => {
-    const now = new Date();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
     return `${month}/${day}`;
-  }, []);
+  }, [date]);
 
   return (
     <View style={styles.dateContainer}>
@@ -18,8 +22,7 @@ export default function DateHeader({ theme }: Props) {
         accessibilityLabel="Previous day"
         activeOpacity={0.7}
         style={styles.navButton}
-        // Placeholder for future behavior
-        onPress={() => {}}
+        onPress={onPrevDay}
       >
         <Text style={[styles.navText, { color: theme.border }]}>←</Text>
       </TouchableOpacity>
@@ -30,8 +33,7 @@ export default function DateHeader({ theme }: Props) {
         accessibilityLabel="Next day"
         activeOpacity={0.7}
         style={styles.navButton}
-        // Placeholder for future behavior
-        onPress={() => {}}
+        onPress={onNextDay}
       >
         <Text style={[styles.navText, { color: theme.border }]}>→</Text>
       </TouchableOpacity>

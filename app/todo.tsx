@@ -21,6 +21,7 @@ export default function TodoScreen() {
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [trashSvg, setTrashSvg] = useState('');
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   
   // Timer state - COMMENTED OUT FOR NOW
   // const [isTimerVisible, setIsTimerVisible] = useState(false);
@@ -31,10 +32,10 @@ export default function TodoScreen() {
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const currentTheme = themes[isDarkTheme ? 'dark' : 'light'];
 
-  // Load tasks on mount
+  // Load tasks whenever selected date changes
   useEffect(() => {
-    loadTasks();
-  }, []);
+    loadTasksForDate(selectedDate);
+  }, [selectedDate]);
 
   // Set SVG content directly (fixing the loading issue)
   useEffect(() => {
@@ -46,11 +47,11 @@ export default function TodoScreen() {
     `);
   }, []);
 
-  const loadTasks = async () => {
+  const loadTasksForDate = async (date: Date) => {
     setIsLoading(true);
     try {
-      const todayTasks = await taskStorage.getTodayTasks();
-      setTasks(todayTasks);
+      const dateTasks = await taskStorage.getTasksForDate(date);
+      setTasks(dateTasks);
     } catch (error) {
       console.error('Error loading tasks:', error);
     } finally {
@@ -61,7 +62,7 @@ export default function TodoScreen() {
   // Optimized handlers with useCallback
   const handleToggleTask = useCallback(async (taskId: string) => {
     try {
-      const success = await taskStorage.toggleTask(taskId);
+      const success = await taskStorage.toggleTaskForDate(selectedDate, taskId);
       if (success) {
         setTasks(prevTasks => 
           prevTasks.map(task =>
@@ -72,18 +73,18 @@ export default function TodoScreen() {
     } catch (error) {
       console.error('Error toggling task:', error);
     }
-  }, []);
+  }, [selectedDate]);
 
   const handleDeleteTask = useCallback(async (taskId: string) => {
     try {
-      const success = await taskStorage.deleteTask(taskId);
+      const success = await taskStorage.deleteTaskForDate(selectedDate, taskId);
       if (success) {
         setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
       }
     } catch (error) {
       console.error('Error deleting task:', error);
     }
-  }, []);
+  }, [selectedDate]);
 
   // Optimized modal handlers
   const handleOpenModal = useCallback(() => {
@@ -106,6 +107,23 @@ export default function TodoScreen() {
   // Theme handlers
   const handleToggleTheme = useCallback(() => {
     setIsDarkTheme(prev => !prev);
+  }, []);
+
+  // Date navigation handlers
+  const handlePrevDay = useCallback(() => {
+    setSelectedDate(prev => {
+      const next = new Date(prev);
+      next.setDate(prev.getDate() - 1);
+      return next;
+    });
+  }, []);
+
+  const handleNextDay = useCallback(() => {
+    setSelectedDate(prev => {
+      const next = new Date(prev);
+      next.setDate(prev.getDate() + 1);
+      return next;
+    });
   }, []);
 
   // Optimized render function with keyExtractor
@@ -165,7 +183,7 @@ export default function TodoScreen() {
         theme={currentTheme}
       />
 
-      <DateHeader theme={currentTheme} />
+      <DateHeader theme={currentTheme} date={selectedDate} onPrevDay={handlePrevDay} onNextDay={handleNextDay} />
 
       {/* Timer Panel (compact timer + zen button) - COMMENTED OUT FOR NOW */}
      
@@ -228,7 +246,7 @@ export default function TodoScreen() {
         onClose={handleCloseModal}
         onAdd={async (text) => {
           try {
-            const newTask = await taskStorage.addTask(text.trim());
+            const newTask = await taskStorage.addTaskForDate(selectedDate, text.trim());
             if (newTask) {
               setTasks(prevTasks => [...prevTasks, newTask]);
             }
