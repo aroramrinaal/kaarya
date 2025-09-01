@@ -21,5 +21,3 @@ const TrashIcon: React.FC<Props> = ({ size = 22, color = '#000' }) => {
 };
 
 export default TrashIcon;
-
-
