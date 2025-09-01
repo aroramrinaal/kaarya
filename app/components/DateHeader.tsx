@@ -7,11 +7,9 @@ type Props = { theme: AppTheme };
 export default function DateHeader({ theme }: Props) {
   const dateString = useMemo(() => {
     const now = new Date();
-    const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' };
-    const base = now.toLocaleDateString('en-US', options);
-    const day = now.getDate();
-    const suffix = day === 1 || day === 21 || day === 31 ? 'st' : day === 2 || day === 22 ? 'nd' : day === 3 || day === 23 ? 'rd' : 'th';
-    return base.replace(/\d+/, day + suffix);
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${month}/${day}`;
   }, []);
 
   return (
@@ -25,6 +23,7 @@ const styles = StyleSheet.create({
   dateContainer: {
     paddingHorizontal: 32,
     marginBottom: 60,
+    alignItems: 'center',
   },
   dateText: {
     fontSize: 20,
