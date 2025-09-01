@@ -1,18 +1,17 @@
 import React, { useCallback } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { SvgXml } from 'react-native-svg';
 import type { AppTheme } from '../../types';
 import type { Task } from '../../utils/storage';
+import TrashIcon from './icons/TrashIcon';
 
 type Props = {
   item: Task;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
-  trashSvg: string;
   theme: AppTheme;
 };
 
-const TaskItem = React.memo(({ item, onToggle, onDelete, trashSvg, theme }: Props) => {
+const TaskItem = React.memo(({ item, onToggle, onDelete, theme }: Props) => {
   const handleToggle = useCallback(() => {
     onToggle(item.id);
   }, [item.id, onToggle]);
@@ -42,17 +41,7 @@ const TaskItem = React.memo(({ item, onToggle, onDelete, trashSvg, theme }: Prop
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <View style={styles.trashIconContainer}>
-            {trashSvg ? (
-              <SvgXml
-                xml={trashSvg.replace(/fill=\"[^\"]*\"/g, `fill=\"${theme.border}\"`).replace(/stroke=\"[^\"]*\"/g, `stroke=\"${theme.border}\"`)}
-                width="22"
-                height="22"
-              />
-            ) : (
-              <View style={styles.fallbackIcon}>
-                <Text style={[styles.fallbackIconText, { color: theme.border }]}>🗑</Text>
-              </View>
-            )}
+            <TrashIcon size={22} color={theme.border} />
           </View>
         </TouchableOpacity>
       </View>

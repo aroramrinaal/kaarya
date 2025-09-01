@@ -20,7 +20,7 @@ export default function TodoScreen() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [trashSvg, setTrashSvg] = useState('');
+  // Deprecated: inline SVG string removed in favor of component-based icon
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   
   // Timer state - COMMENTED OUT FOR NOW
@@ -37,15 +37,7 @@ export default function TodoScreen() {
     loadTasksForDate(selectedDate);
   }, [selectedDate]);
 
-  // Set SVG content directly (fixing the loading issue)
-  useEffect(() => {
-    // Use inline SVG instead of trying to fetch local assets
-    setTrashSvg(`
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-        <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M10 11v6M14 11v6" stroke="#90574D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    `);
-  }, []);
+  // No longer needed: SVG string setup removed
 
   const loadTasksForDate = async (date: Date) => {
     setIsLoading(true);
@@ -132,10 +124,9 @@ export default function TodoScreen() {
       item={item}
       onToggle={handleToggleTask}
       onDelete={handleDeleteTask}
-      trashSvg={trashSvg}
       theme={currentTheme}
     />
-  ), [handleToggleTask, handleDeleteTask, trashSvg, currentTheme]);
+  ), [handleToggleTask, handleDeleteTask, currentTheme]);
 
   const keyExtractor = useCallback((item: Task) => item.id, []);
 
