@@ -2,13 +2,18 @@
 
 An experimental Expo Config Plugin that generates native Apple Targets like Widgets or App Clips, and links them outside the /ios directory. You can open Xcode and develop the targets inside the virtual expo:targets folder and the changes will be saved outside of the ios directory. This pattern enables building things that fall outside of the scope of React Native while still obtaining all the benefits of Continuous Native Generation.
 
-## How to use
+## How to use (IMPORTANT)
 
 1. Run npx create-target in your Expo project to generate an Apple target.
+
 2. Select a target to generate, I recommend starting with a widget (e.g. npx create-target widget). This will generate the required widget files in the root /targets directory, install @bacons/apple-targets, and add the Expo Config Plugin to your project.
+
 3. If you already know your Apple Team ID, then set it under the ios.appleTeamId property in your app.json. You can find this in Xcode under the Signing & Capabilities tab and set it later if needed.
+
 4. Run npx expo prebuild -p ios --clean to generate the Xcode project.
+
 5. You can now open your project in Xcode (xed ios) and develop the widget inside the expo:targets/<target> folder.
+
 6. When you're ready to build, select the target in Xcode and build it.
 
 ## How it works
