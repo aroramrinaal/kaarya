@@ -15,7 +15,8 @@
         "ITSAppUsesNonExemptEncryption": false
       },
       "icon": "./assets/icons/kaarya-icon-noalpha.png",
-      "requireFullScreen": true
+      "requireFullScreen": true,
+      "appleTeamId": "82WBL8A6DY"
     },
     "web": {
       "bundler": "metro",
