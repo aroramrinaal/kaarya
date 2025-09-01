@@ -4,24 +4,17 @@ import {
   StatusBar,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useAppFonts } from '../hooks/useAppFonts';
-import { useTimer } from '../hooks/useTimer';
 import { themes } from '../types';
 import { Task, taskStorage } from '../utils/storage';
+import AddButton from './components/AddButton';
 import AddTaskModal from './components/AddTaskModal';
 import DateHeader from './components/DateHeader';
 import HeaderBar from './components/HeaderBar';
 import TaskItem from './components/TaskItem';
-import TimerPanel from './components/TimerPanel';
-import ZenMode from './components/ZenMode';
-
-
-// Header icons and themes moved into components
-
 
 export default function TodoScreen() {
   const fontsLoaded = useAppFonts();
@@ -222,22 +215,11 @@ export default function TodoScreen() {
       )}
 
       {/* Add Button */}
-      <TouchableOpacity 
-        style={[
-          styles.addButton, 
-          { 
-            backgroundColor: currentTheme.border,
-            shadowColor: currentTheme.border,
-          }
-        ]}
+      <AddButton
         onPress={handleOpenModal}
-        activeOpacity={0.8}
-      >
-        <Text style={[
-          styles.addButtonText, 
-          { color: isDarkTheme ? currentTheme.background : '#FAEBD7' }
-        ]}>+</Text>
-      </TouchableOpacity>
+        theme={currentTheme}
+        isDarkTheme={isDarkTheme}
+      />
 
       {/* Add Task Modal */}
       <AddTaskModal
@@ -306,31 +288,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     lineHeight: 32,
   },
-  addButton: {
-    position: 'absolute',
-    bottom: 50,
-    right: 32,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#90574D',
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 12,
-    shadowOffset: {
-      width: 0,
-      height: 6,
-    },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-  },
-  addButtonText: {
-    fontSize: 36,
-    color: '#FAEBD7',
-    fontWeight: '200',
-    lineHeight: 36,
-    marginTop: -2,
-  },
+
   // Optimized Swipeable Styles
   swipeableContainer: undefined as any,
   swipeableChildrenContainer: undefined as any,
